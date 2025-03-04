@@ -14,15 +14,20 @@ import { format12time, formatDate } from "../../utils/helperFunction";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native"; // Import the useNavigation hook
+import { useSelector } from "react-redux";
+import BusesList from "../../Components/BusesList";
 
 const BookingForm = () => {
   const navigation = useNavigation(); // Initialize navigation
   const [hasSearched, setHasSearched] = useState(false);
-  const [buses, setBuses] = useState([]);
   const [filteredBuses, setFilteredBuses] = useState([]);
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    console.log("Buses in use Effect", buses);
+  }, []);
 
+  console.log("Buses outside Effect", buses);
   const [formData, setFormData] = useState({
     fromCity: "",
     toCity: "",
@@ -31,30 +36,7 @@ const BookingForm = () => {
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedBusId, setSelectedBusId] = useState(null);
-  useEffect(() => {
-    const fetchBuses = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`${apiBaseUrl}/bus`);
-        const data = await response.json();
-        setBuses(data);
-
-        const uniqueCities = Array.from(
-          new Set(
-            data.flatMap((bus) => [bus.route.startCity, bus.route.endCity])
-          )
-        );
-        setCities(uniqueCities);
-      } catch (error) {
-        console.error("Error fetching buses:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBuses();
-  }, []);
-
+  const buses = useSelector((state) => state.buses.data);
   const handleInputChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
   };
@@ -116,7 +98,7 @@ const BookingForm = () => {
   // Navigation to Ticket page when button is pressed
   const handleBookTicket = () => {
     setSelectedBusId(busId._id); // Store the selected bus ID
-    navigation.navigate("BookTicket", { busId._id }); // Navigate to the 'Ticket' screen
+    navigation.navigate("BookTicket", { busId }); // Navigate to the 'Ticket' screen
   };
 
   return (
@@ -126,7 +108,7 @@ const BookingForm = () => {
       {/* From City Dropdown */}
       <Picker
         selectedValue={formData.fromCity}
-        style={styles.picker} 
+        style={styles.picker}
         onValueChange={(itemValue) => handleInputChange("fromCity", itemValue)}
       >
         <Picker.Item label="Select From City" value="" />
@@ -167,6 +149,8 @@ const BookingForm = () => {
 
       {/* Submit Button */}
       <Button title="Search" onPress={handleSubmit} />
+
+      <BusesList />
 
       {/* Loading Indicator */}
       {loading && (

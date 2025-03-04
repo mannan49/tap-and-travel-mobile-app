@@ -6,19 +6,20 @@ import TextInputWithLable from "../../Components/TextInputWithLabel";
 import validator from "../../utils/validation";
 import { showError } from "../../utils/helperFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { LOGIN } from "../../config/urls";
+import { useDispatch } from "react-redux";
+import { initializeStore } from "../../store/intializeStore";
 
 export const loginUser = async (userData) => {
+  const dispatch = useDispatch();
   try {
-    const response = await fetch(
-      "https://tap-and-travel-backend.vercel.app/api/v1/user/login",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(userData),
-      }
-    );
+    const response = await fetch(`${LOGIN}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(userData),
+    });
 
     const data = await response.json();
     console.log("Parsed JSON data:", data);
@@ -32,14 +33,15 @@ export const loginUser = async (userData) => {
       return { success: false, message: data.message };
     }
   } catch (err) {
-    const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+    const errorMessage =
+      err instanceof Error ? err.message : "An unexpected error occurred";
     console.error("Error while logging in:", errorMessage);
     return { success: false, message: errorMessage };
   }
 };
 
-
 const Login = ({ navigation }) => {
+  const dispatch = useDispatch();
   const [state, setState] = useState({
     isLoading: false,
     email: "",
@@ -64,20 +66,21 @@ const Login = ({ navigation }) => {
   const onLogin = async () => {
     const checkValid = isValidData();
     if (!checkValid) return; // If the validation fails, stop the process.
-     // Set loading to true
-     updateState({ isLoading: true });
+    // Set loading to true
+    updateState({ isLoading: true });
 
-     const response = await loginUser({ email, password }); // Call the API function
- 
-     if (response.success) {
-      navigation.navigate("Signup")
-     } else {
-       // If login failed, show an error message
-       Alert.alert("Login Failed", response.message || "Something went wrong");
-     }
- 
-     // Set loading to false after the login attempt
-     updateState({ isLoading: false });
+    const response = await loginUser({ email, password }); // Call the API function
+
+    if (response.success) {
+      // dispatch(await initializeStore(dispatch));
+      navigation.navigate("Signup");
+    } else {
+      // If login failed, show an error message
+      Alert.alert("Login Failed", response.message || "Something went wrong");
+    }
+
+    // Set loading to false after the login attempt
+    updateState({ isLoading: false });
   };
   return (
     <View style={styles.container}>
