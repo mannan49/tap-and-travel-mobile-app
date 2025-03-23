@@ -159,7 +159,9 @@ const BookingForm = () => {
       )}
 
       {/* Submit Button */}
-      <Button title="Search" onPress={handleSubmit} />
+      <TouchableOpacity style={styles.searchButton} onPress={handleSubmit}>
+        <Text style={styles.searchButtonText}>Search</Text>
+      </TouchableOpacity>
 
       {/* Loading Indicator */}
       {loading && <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />}
@@ -208,8 +210,8 @@ const BookingForm = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 60,             // Increased top padding for space
+    paddingHorizontal: 20,
+    paddingTop: 40,
     backgroundColor: '#FFFFFF',
   },
   title: {
@@ -217,48 +219,109 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     textAlign: 'center',
     color: '#2C3E50',
-    marginBottom: 40,           // Extra space below title
+    marginBottom: 30,
   },
   picker: {
-    height: 56,
+    height: 50,
     borderColor: '#BDC3C7',
     borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 24,
-    paddingHorizontal: 12,
+    marginBottom: 20,
+    paddingHorizontal: 10,
     backgroundColor: '#F8F9FA',
+    justifyContent: 'center',
   },
-  loader: {
-    marginTop: 40,
-  },
-  results: {
-    marginTop: 40,
-  },
-  busCard: {
-    backgroundColor: '#FFFFFF',
-    padding: 20,
-    marginBottom: 24,
-    borderRadius: 12,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    borderColor: '#ECECEC',
+  input: {
+    height: 50,
+    borderColor: '#BDC3C7',
     borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+    backgroundColor: '#F8F9FA',
+    marginBottom: 20,
   },
-  bookButton: {
+  dateText: {
+    fontSize: 16,
+    color: '#34495E',
+  },
+  searchButton: {
     backgroundColor: '#3498DB',
-    paddingVertical: 16,
+    paddingVertical: 14,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
+    marginBottom: 30,
+    elevation: 2,
   },
-  bookButtonText: {
+  searchButtonText: {
     color: '#FFFFFF',
     fontSize: 18,
     fontWeight: 'bold',
-    letterSpacing: 1,
+  },
+  loader: {
+    marginTop: 20,
+  },
+  results: {
+    marginTop: 20,
+  },
+  busCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 16,
+    marginBottom: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+    borderColor: '#ECECEC',
+    borderWidth: 1,
+  },
+  busCompany: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 10,
+  },
+  routeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cityText: {
+    fontSize: 16,
+    color: '#34495E',
+  },
+  arrowIcon: {
+    marginHorizontal: 8,
+  },
+  price: {
+    fontSize: 16,
+    color: '#27AE60',
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  dateTime: {
+    fontSize: 14,
+    color: '#7F8C8D',
+    marginBottom: 4,
+  },
+  stops: {
+    fontSize: 14,
+    color: '#7F8C8D',
+    marginBottom: 12,
+  },
+  bookButton: {
+    backgroundColor: '#3498DB',
+    paddingVertical: 14,
+    borderRadius: 8,
+    alignItems: 'center',
+    elevation: 2,
+  },
+  bookButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
