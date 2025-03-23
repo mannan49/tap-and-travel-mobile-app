@@ -4,7 +4,7 @@ import {
   createBottomTabNavigator,
 } from "@react-navigation/bottom-tabs";
 import { MaterialIcons } from "react-native-vector-icons";
-import { Home, Profile , Ticket, Map} from "../";
+import { Home, Profile, Ticket, Map } from "../";
 
 const BottomTab = createBottomTabNavigator();
 
@@ -32,7 +32,7 @@ const TabRoutes = () => {
           ),
         }}
       />
-        <BottomTab.Screen
+      <BottomTab.Screen
         name="Ticket"
         component={Ticket}
         options={{
