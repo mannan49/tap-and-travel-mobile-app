@@ -1,28 +1,17 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation } from '@react-navigation/native'; // To navigate programmatically
+import { AuthContext } from '../../context/AuthContext';
 
 // Profile component
 const Profile = () => {
 
   // Function to clear token and redirect to Auth Stack
-  const handleLogout = async () => {
-    try {
-      // Remove the 'token' from AsyncStorage
-      await AsyncStorage.removeItem('token');
-      console.log('Token cleared successfully');
-      
-      
-    } catch (error) {
-      console.error('Error clearing token:', error);``
-    }
-  };
+  const { logout } = useContext(AuthContext); // <-- get login from context
 
   return (
     <View style={styles.container}>
       {/* Full-width button at the top */}
-      <TouchableOpacity style={styles.button} onPress={handleLogout}>
+      <TouchableOpacity style={styles.button} onPress={logout}>
         <Text style={styles.buttonText}>Logout</Text>
       </TouchableOpacity>
 

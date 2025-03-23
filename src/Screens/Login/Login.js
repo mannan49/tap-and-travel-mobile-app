@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { View, Text, StyleSheet, Alert } from "react-native";
 import ButtonWithLoader from "../../Components/ButtonWithLoader";
 import TextInputWithLable from "../../Components/TextInputWithLabel";
@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOGIN } from "../../config/urls";
 import { useDispatch } from "react-redux";
 import { initializeStore } from "../../store/intializeStore";
+import { AuthContext } from "../../context/AuthContext";
 
 export const loginUser = async (userData) => {
   console.log("Login request payload:", userData); // ✅ Log the request payload
@@ -37,7 +38,9 @@ export const loginUser = async (userData) => {
 };
 
 const Login = ({ navigation }) => {
-  const dispatch = useDispatch();
+
+  const { login } = useContext(AuthContext); // <-- get login from context
+
   const [state, setState] = useState({
     isLoading: false,
     email: "",
@@ -72,8 +75,9 @@ const Login = ({ navigation }) => {
     const response = await loginUser({ email, password });
 
     if (response.success) {
-      console.log("Login successful, navigating to Signup"); // ✅ Log successful login
-      navigation.navigate("Signup");
+      await login(response.data.token);
+      console.log("Logged in successfully");
+      // here i want to update my guard on successful login but issue is , that is in separate component route .js 
     } else {
       console.error("Login failed:", response.message);
       Alert.alert("Login Failed", response.message || "Something went wrong");
