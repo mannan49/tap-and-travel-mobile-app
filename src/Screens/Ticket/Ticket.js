@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
+import apiClient from '../../api/apiClient';
 
 const Ticket = () => {
     const [tickets, setTickets] = useState([]);
@@ -37,7 +38,8 @@ const Ticket = () => {
 
 
 
-            const response = await fetch(`https://tap-and-travel-backend.vercel.app/api/v1/ticket/user/67573a03f33135240234eaa3`);
+            // const response = await fetch(`https://tap-and-travel-backend.vercel.app/api/v1/ticket/user/${userId}`);
+            const response = await apiClient(`/ticket/user/${userId}`);
             const data = await response.json();
 
             // console.log('Tickets fetched:', data);

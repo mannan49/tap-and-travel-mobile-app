@@ -1,20 +1,24 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View } from "react-native";
+import { View } from "react-native";
 import Routes from "./src/Navigations/Route";
 import FlashMessage from "react-native-flash-message";
 import { Provider } from "react-redux";
 import store from "./src/store/store";
 import { AuthProvider } from "./src/context/AuthContext";
+import { StripeProvider } from "@stripe/stripe-react-native";
+import Toast from "react-native-toast-message";
 
 export default function App() {
   return (
-    <Provider store={store}>
-      <AuthProvider>
-        <View style={{ flex: 1 }}>
-          <Routes/>
-          <FlashMessage position="top" />
-        </View>
-      </AuthProvider>
-    </Provider>
+    <StripeProvider publishableKey="pk_test_51QMkUFKzfMgYIpCx3iDEwl4GbcNYQyEwhJKqGsc8BAuQ8h7pHFJqjhGR6LfImDlOojLfiV0DngTdZv1OBiv3w8c500a980IyyP">
+      <Provider store={store}>
+        <AuthProvider>
+          <View style={{ flex: 1 }}>
+            <Routes />
+            <Toast />
+            <FlashMessage position="top" />
+          </View>
+        </AuthProvider>
+      </Provider>
+    </StripeProvider>
   );
 }
