@@ -11,7 +11,7 @@ export default function App() {
     <Provider store={store}>
       <AuthProvider>
         <View style={{ flex: 1 }}>
-          <Routes />
+          <Routes/>
           <FlashMessage position="top" />
         </View>
       </AuthProvider>

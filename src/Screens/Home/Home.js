@@ -41,7 +41,7 @@ const BookingForm = () => {
 
       setBuses(filteredData);
       extractCities(filteredData);
-      console.log("Fetched Buses:", filteredData);
+      // console.log("Fetched Buses:", filteredData);
     } catch (error) {
       console.error("Error fetching buses:", error);
     }
@@ -206,14 +206,61 @@ const BookingForm = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "white" },
-  title: { fontSize: 24, fontWeight: "bold", textAlign: "center", marginBottom: 20 },
-  picker: { height: 60, borderColor: "#ccc", borderWidth: 1, marginBottom: 15, borderRadius: 5 },
-  loader: { marginTop: 20 },
-  results: { marginTop: 20 },
-  busCard: { padding: 20, marginBottom: 15, borderRadius: 10, backgroundColor: "#fff" },
-  bookButton: { backgroundColor: "#28a745", paddingVertical: 10, borderRadius: 5, alignItems: "center" },
-  bookButtonText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  container: {
+    flex: 1,
+    paddingHorizontal: 24,
+    paddingTop: 60,             // Increased top padding for space
+    backgroundColor: '#FFFFFF',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: '#2C3E50',
+    marginBottom: 40,           // Extra space below title
+  },
+  picker: {
+    height: 56,
+    borderColor: '#BDC3C7',
+    borderWidth: 1,
+    borderRadius: 8,
+    marginBottom: 24,
+    paddingHorizontal: 12,
+    backgroundColor: '#F8F9FA',
+  },
+  loader: {
+    marginTop: 40,
+  },
+  results: {
+    marginTop: 40,
+  },
+  busCard: {
+    backgroundColor: '#FFFFFF',
+    padding: 20,
+    marginBottom: 24,
+    borderRadius: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderColor: '#ECECEC',
+    borderWidth: 1,
+  },
+  bookButton: {
+    backgroundColor: '#3498DB',
+    paddingVertical: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  bookButtonText: {
+    color: '#FFFFFF',
+    fontSize: 18,
+    fontWeight: 'bold',
+    letterSpacing: 1,
+  },
 });
+
 
 export default BookingForm;

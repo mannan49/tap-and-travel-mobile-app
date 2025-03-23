@@ -21,6 +21,7 @@ const TabRoutes = () => {
         tabBarActiveTintColor: "tomato", // Active tab color
         tabBarInactiveTintColor: "gray", // Inactive tab color
         tabBarStyle: { backgroundColor: "white" }, // Tab bar background color
+        headerShown: false
       }}
     >
       <BottomTab.Screen

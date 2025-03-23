@@ -11,7 +11,9 @@ export default function Routes() {
   const { isAuthenticated } = useContext(AuthContext); // <-- get auth state
   return (
     <NavigationContainer>
-      <Stack.Navigator>
+      <Stack.Navigator screenOptions={{
+        headerShown: false, // ✅ Hides the header on all screens
+      }}>
         {isAuthenticated ? MainStack(Stack) : AuthStack(Stack)}
       </Stack.Navigator>
     </NavigationContainer>
