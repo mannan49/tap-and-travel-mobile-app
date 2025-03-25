@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { View, Text, StyleSheet, Alert } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import ButtonWithLoader from "../../Components/ButtonWithLoader";
 import TextInputWithLable from "../../Components/TextInputWithLabel";
 import validator from "../../utils/validation";
@@ -9,10 +9,9 @@ import { LOGIN } from "../../config/urls";
 import { useDispatch } from "react-redux";
 import { initializeStore } from "../../store/intializeStore";
 import { AuthContext } from "../../context/AuthContext";
+import Toast from "react-native-toast-message";
 
 export const loginUser = async (userData) => {
-  console.log("Login request payload:", userData); // ✅ Log the request payload
-
   try {
     const response = await fetch(LOGIN, {
       method: "POST",
@@ -21,26 +20,20 @@ export const loginUser = async (userData) => {
     });
 
     const data = await response.json();
-    console.log("API Response:", data); // ✅ Log API response
-    
+
     if (response.ok && data.token) {
-      console.log("Login successful, saving token..."); // ✅ Log token save
       await AsyncStorage.setItem("token", data.token);
       return { success: true, data };
     } else {
-      console.error("Login failed:", data.message);
       return { success: false, message: data.message || "Login failed" };
     }
   } catch (err) {
-    console.error("Login error:", err.message);
     return { success: false, message: err.message || "Unexpected error" };
   }
 };
 
 const Login = ({ navigation }) => {
-
-  const { login } = useContext(AuthContext); // <-- get login from context
-
+  const { login } = useContext(AuthContext);
   const [state, setState] = useState({
     isLoading: false,
     email: "",
@@ -62,25 +55,21 @@ const Login = ({ navigation }) => {
   };
 
   const onLogin = async () => {
-    console.log("Login button clicked"); // ✅ Log click event
-
     if (!isValidData()) {
-      console.log("Validation failed"); // ✅ Log validation failure
       return;
     }
 
     updateState({ isLoading: true });
-    console.log("Sending login request..."); // ✅ Log before API call
 
     const response = await loginUser({ email, password });
 
     if (response.success) {
       await login(response.data.token);
-      console.log("Logged in successfully");
-      // here i want to update my guard on successful login but issue is , that is in separate component route .js 
     } else {
-      console.error("Login failed:", response.message);
-      Alert.alert("Login Failed", response.message || "Something went wrong");
+      Toast.show({
+        type: "error",
+        text1: "Invalid email or password!",
+      });
     }
 
     updateState({ isLoading: false });
@@ -102,7 +91,10 @@ const Login = ({ navigation }) => {
 
       <ButtonWithLoader text="Login" onPress={onLogin} isLoading={isLoading} />
       <View style={{ marginVertical: 8 }} />
-      <ButtonWithLoader text="Signup" onPress={() => navigation.navigate("Signup")} />
+      <ButtonWithLoader
+        text="Signup"
+        onPress={() => navigation.navigate("Signup")}
+      />
     </View>
   );
 };

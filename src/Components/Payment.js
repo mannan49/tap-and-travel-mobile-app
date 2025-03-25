@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, Alert } from "react-native";
+import { View, Text, Button } from "react-native";
 import {
   useStripe,
   initPaymentSheet,
@@ -23,7 +23,7 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
   const initializePaymentSheet = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.post(`${PAYMENT_INTENT}`, {
+      const { data } = await apiClient.post(`/payment/create-payment-intent`, {
         amount,
         busId,
         userId,
@@ -32,7 +32,6 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
 
       const { clientSecret, ephemeralKey, customer } = data;
 
-      console.log("Data", data);
 
       const { error } = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret,
@@ -45,8 +44,6 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
         setLoading(false);
       }
     } catch (err) {
-      console.error("Error initializing payment sheet", err);
-      Alert.alert("Error", "Unable to initialize payment.");
       Toast.show({
         type: "error",
         text1: "Unable to initialize payment.",
@@ -87,7 +84,7 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
     try {
       for (const seat of selectedSeats) {
         // **1️⃣ Update Seat Status**
-        await axios.patch(`${apiBaseUrl}/bus/update-seat-status`, {
+        await apiClient.patch(`/bus/update-seat-status`, {
           busId,
           seatNumber: seat?.seatNumber,
           booked: true,

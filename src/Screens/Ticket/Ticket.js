@@ -38,11 +38,7 @@ const Ticket = () => {
 
 
 
-            // const response = await fetch(`https://tap-and-travel-backend.vercel.app/api/v1/ticket/user/${userId}`);
-            const response = await apiClient(`/ticket/user/${userId}`);
-            const data = await response.json();
-
-            // console.log('Tickets fetched:', data);
+            const {data} = await apiClient(`/ticket/user/${userId}`);
             setTickets(data);
             filterTickets(data, selectedTab); // ⬅️ filter tickets after fetching
         } catch (error) {
