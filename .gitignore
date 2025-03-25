@@ -3,6 +3,7 @@
 # dependencies
 node_modules/
 
+.vs
 # Expo
 .expo/
 dist/

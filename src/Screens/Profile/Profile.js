@@ -1,25 +1,26 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   ScrollView,
-} from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { jwtDecode } from 'jwt-decode';
-import { AuthContext } from '../../context/AuthContext';
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { jwtDecode } from "jwt-decode";
+import { AuthContext } from "../../context/AuthContext";
+import apiClient from "../../api/apiClient";
+import Toast from "react-native-toast-message";
 
 const Profile = () => {
-  const [name, setName] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [email, setEmail] = useState('');
+  const [name, setName] = useState("");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
 
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const { logout } = useContext(AuthContext);
@@ -32,39 +33,28 @@ const Profile = () => {
   const fetchProfile = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem("token");
 
       if (!token) {
-        Alert.alert('Error', 'No token found');
         setLoading(false);
         return;
       }
 
       const decoded = jwtDecode(token);
-      const userId = decoded.sub;
+      const userId = decoded?.sub;
 
-      console.log('Decoded userId:', userId);
-
-      const res = await fetch(`https://tap-and-travel-backend.vercel.app/api/v1/user/${userId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await res.json();
-      console.log('Response:', data);
+      const { data } = await apiClient.get(`/user/${userId}`);
       if (res.ok && data && data.user) {
-        setName(data.user.name);
-        setPhoneNumber(data.user.phoneNumber);
-        setEmail(data.user.email);
-      } else {
-        Alert.alert('Error', data.message || 'Failed to fetch profile');
+        setName(data?.user?.name);
+        setPhoneNumber(data?.user?.phoneNumber);
+        setEmail(data?.user?.email);
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Something went wrong');
+      Toast.show({
+        type: "error",
+        text1: "Something went wrong",
+      });
     }
     setLoading(false);
   };
@@ -72,40 +62,34 @@ const Profile = () => {
   // 🔸 Update profile (name + phone)
   const updateProfile = async () => {
     if (!name || !phoneNumber) {
-      Alert.alert('Validation Error', 'Name and Phone Number are required');
+      Toast.show({
+        type: "info",
+        text1: "Name and Phone Number are required",
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      const token = await AsyncStorage.getItem('token');
-      const decoded = jwtDecode(token);
-      const userId = decoded.sub;
-
-      const res = await fetch(`https://tap-and-travel-backend.vercel.app/api/v1/user/update-profile`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          userId: userId,
-          name: name,
-          phoneNumber: phoneNumber,
-        }),
+      const token = await AsyncStorage.getItem("token");
+      const { sub: userId } = jwtDecode(token);
+      
+      await apiClient.patch(`/user/update-profile`, {
+        userId,
+        name,
+        phoneNumber,
       });
 
-      const data = await res.json();
-
-      if (res.ok) {
-        Alert.alert('Success', 'Profile updated successfully');
-      } else {
-        Alert.alert('Error', data.message || 'Failed to update profile');
-      }
+        Toast.show({
+          type: "success",
+          text1: "Profile updated successfully",
+        });
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Something went wrong');
+      Toast.show({
+        type: "error",
+        text1: "Something went wrong",
+      });
     }
 
     setLoading(false);
@@ -114,47 +98,36 @@ const Profile = () => {
   // 🔸 Change password (requires email, oldPassword, newPassword)
   const changePassword = async () => {
     if (!oldPassword || !newPassword) {
-      Alert.alert('Validation Error', 'Old and new passwords are required');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      Alert.alert('Validation Error', 'New password must be at least 6 characters');
+      Toast.show({
+        type: "info",
+        text1: "Old and new passwords are required",
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      const token = await AsyncStorage.getItem('token');
-
-      const res = await fetch(`https://tap-and-travel-backend.vercel.app/api/v1/user/change-password`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          email: email,
-          oldPassword: oldPassword,
-          newPassword: newPassword,
-        }),
+      await apiClient.post(`/user/change-password`, {
+        email,
+        oldPassword,
+        newPassword,
       });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        Alert.alert('Success', 'Password changed successfully');
-        setOldPassword('');
-        setNewPassword('');
-      } else {
-        Alert.alert('Error', data.message || 'Failed to change password');
-      }
+    
+      Toast.show({
+        type: "success",
+        text1: "Password changed successfully",
+      });
+    
+      setOldPassword("");
+      setNewPassword("");
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Something went wrong');
+      Toast.show({
+        type: "error",
+        text1: "Failed to change password",
+      });
     }
-
+    
     setLoading(false);
   };
 
@@ -183,7 +156,7 @@ const Profile = () => {
         {/* Email Input (disabled) */}
         <Text style={styles.label}>Email</Text>
         <TextInput
-          style={[styles.input, { backgroundColor: '#ECF0F1' }]}
+          style={[styles.input, { backgroundColor: "#ECF0F1" }]}
           value={email}
           editable={false}
         />
@@ -246,16 +219,16 @@ export default Profile;
 const styles = StyleSheet.create({
   scrollContainer: {
     flexGrow: 1,
-    backgroundColor: '#ecf0f1',
-    justifyContent: 'center',
+    backgroundColor: "#ecf0f1",
+    justifyContent: "center",
   },
   container: {
     padding: 20,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     marginHorizontal: 16,
     marginTop: 40,
     borderRadius: 12,
-    shadowColor: '#000000',
+    shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 8,
@@ -263,56 +236,56 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   header: {
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#2C3E50',
+    fontWeight: "bold",
+    color: "#2C3E50",
     marginBottom: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   label: {
     fontSize: 15,
-    color: '#34495E',
+    color: "#34495E",
     marginBottom: 6,
     marginTop: 12,
   },
   input: {
-    backgroundColor: '#F4F6F8',
+    backgroundColor: "#F4F6F8",
     padding: 10,
     borderRadius: 8,
     fontSize: 15,
-    color: '#2C3E50',
+    color: "#2C3E50",
   },
   saveButton: {
     marginTop: 16,
-    backgroundColor: '#1ABC9C',
+    backgroundColor: "#1ABC9C",
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   saveButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
     fontSize: 15,
   },
   logoutButton: {
     marginTop: 16,
-    backgroundColor: '#E74C3C',
+    backgroundColor: "#E74C3C",
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
   },
   logoutButtonText: {
-    color: '#FFFFFF',
-    fontWeight: 'bold',
+    color: "#FFFFFF",
+    fontWeight: "bold",
     fontSize: 15,
   },
   divider: {
     marginVertical: 20,
     height: 1,
-    backgroundColor: '#BDC3C7',
+    backgroundColor: "#BDC3C7",
   },
 });

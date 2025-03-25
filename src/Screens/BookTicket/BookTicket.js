@@ -9,9 +9,11 @@ import {
   Pressable,
 } from "react-native";
 import { apiBaseUrl } from "../../config/urls";
+import { useNavigation } from "@react-navigation/native";
 
 const BookTicket = ({ route }) => {
   const { busId } = route.params;
+  const navigation = useNavigation();
   const [selectedBus, setSelectedBus] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [genderModalVisible, setGenderModalVisible] = useState(false);
@@ -44,7 +46,10 @@ const BookTicket = ({ route }) => {
         prevSeats.filter((s) => s.seatNumber !== seat.seatNumber)
       );
     } else {
-      setSelectedSeats((prevSeats) => [...prevSeats, { ...seat, gender: null }]);
+      setSelectedSeats((prevSeats) => [
+        ...prevSeats,
+        { ...seat, gender: null },
+      ]);
     }
   };
 
@@ -55,6 +60,15 @@ const BookTicket = ({ route }) => {
     }));
     setSelectedSeats(updatedSeats);
     setGenderModalVisible(false);
+
+    const totalAmount = selectedSeats?.length * selectedBus?.fare.actualPrice;
+    navigation.navigate("PaymentScreen", {
+      busId,
+      userId: "67de83adfd817d7dc56a0a04",
+      amount: totalAmount,
+      adminId: selectedBus?.busDetails?.adminId,
+      selectedSeats: selectedSeats,
+    });
 
     // You can handle submission here
     console.log("Selected Seats with Gender: ", updatedSeats);
@@ -96,7 +110,9 @@ const BookTicket = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{selectedBus?.route?.startCity} to {selectedBus?.route?.endCity}</Text>
+      <Text style={styles.title}>
+        {selectedBus?.route?.startCity} to {selectedBus?.route?.endCity}
+      </Text>
       <Text style={styles.subtitle}>Select Your Seat</Text>
 
       <FlatList
@@ -119,7 +135,7 @@ const BookTicket = ({ route }) => {
             style={styles.confirmButton}
             onPress={() => setGenderModalVisible(true)}
           >
-            <Text style={styles.confirmButtonText}>Confirm Your Booking</Text>
+            <Text style={styles.confirmButtonText}>Confirm Your Bookings</Text>
           </TouchableOpacity>
         </View>
       )}
