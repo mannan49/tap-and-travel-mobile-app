@@ -44,7 +44,7 @@ const Profile = () => {
       const userId = decoded?.sub;
 
       const { data } = await apiClient.get(`/user/${userId}`);
-      if (res.ok && data && data.user) {
+      if (data && data.user) {
         setName(data?.user?.name);
         setPhoneNumber(data?.user?.phoneNumber);
         setEmail(data?.user?.email);
@@ -74,17 +74,17 @@ const Profile = () => {
     try {
       const token = await AsyncStorage.getItem("token");
       const { sub: userId } = jwtDecode(token);
-      
+
       await apiClient.patch(`/user/update-profile`, {
         userId,
         name,
         phoneNumber,
       });
 
-        Toast.show({
-          type: "success",
-          text1: "Profile updated successfully",
-        });
+      Toast.show({
+        type: "success",
+        text1: "Profile updated successfully",
+      });
     } catch (error) {
       Toast.show({
         type: "error",
@@ -113,12 +113,12 @@ const Profile = () => {
         oldPassword,
         newPassword,
       });
-    
+
       Toast.show({
         type: "success",
         text1: "Password changed successfully",
       });
-    
+
       setOldPassword("");
       setNewPassword("");
     } catch (error) {
@@ -127,7 +127,7 @@ const Profile = () => {
         text1: "Failed to change password",
       });
     }
-    
+
     setLoading(false);
   };
 
