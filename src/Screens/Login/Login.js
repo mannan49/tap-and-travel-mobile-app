@@ -1,61 +1,52 @@
-import React, { useState } from "react";
-import { View, Text, StyleSheet, SafeAreaView } from "react-native";
+import React, { useContext, useState } from "react";
+import { View, Text, StyleSheet } from "react-native";
 import ButtonWithLoader from "../../Components/ButtonWithLoader";
 import TextInputWithLable from "../../Components/TextInputWithLabel";
-
 import validator from "../../utils/validation";
 import { showError } from "../../utils/helperFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOGIN } from "../../config/urls";
 import { useDispatch } from "react-redux";
 import { initializeStore } from "../../store/intializeStore";
+import { AuthContext } from "../../context/AuthContext";
+import Toast from "react-native-toast-message";
 
 export const loginUser = async (userData) => {
-  const dispatch = useDispatch();
   try {
-    const response = await fetch(`${LOGIN}`, {
+    const response = await fetch(LOGIN, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(userData),
     });
 
     const data = await response.json();
-    console.log("Parsed JSON data:", data);
 
     if (response.ok && data.token) {
-      // Store the token in AsyncStorage
       await AsyncStorage.setItem("token", data.token);
       return { success: true, data };
     } else {
-      console.error("Login failed", data.message);
-      return { success: false, message: data.message };
+      return { success: false, message: data.message || "Login failed" };
     }
   } catch (err) {
-    const errorMessage =
-      err instanceof Error ? err.message : "An unexpected error occurred";
-    console.error("Error while logging in:", errorMessage);
-    return { success: false, message: errorMessage };
+    return { success: false, message: err.message || "Unexpected error" };
   }
 };
 
 const Login = ({ navigation }) => {
-  const dispatch = useDispatch();
+  const { login } = useContext(AuthContext);
   const [state, setState] = useState({
     isLoading: false,
     email: "",
     password: "",
     isSecure: true,
   });
+
   const { isLoading, email, password, isSecure } = state;
-  const updateState = (data) => setState(() => ({ ...state, ...data }));
+
+  const updateState = (data) => setState((prev) => ({ ...prev, ...data }));
 
   const isValidData = () => {
-    const error = validator({
-      email,
-      password,
-    });
+    const error = validator({ email, password });
     if (error) {
       showError(error);
       return false;
@@ -64,43 +55,42 @@ const Login = ({ navigation }) => {
   };
 
   const onLogin = async () => {
-    const checkValid = isValidData();
-    if (!checkValid) return; // If the validation fails, stop the process.
-    // Set loading to true
-    updateState({ isLoading: true });
-
-    const response = await loginUser({ email, password }); // Call the API function
-
-    if (response.success) {
-      // dispatch(await initializeStore(dispatch));
-      navigation.navigate("Signup");
-    } else {
-      // If login failed, show an error message
-      Alert.alert("Login Failed", response.message || "Something went wrong");
+    if (!isValidData()) {
+      return;
     }
 
-    // Set loading to false after the login attempt
+    updateState({ isLoading: true });
+
+    const response = await loginUser({ email, password });
+
+    if (response.success) {
+      await login(response.data.token);
+    } else {
+      Toast.show({
+        type: "error",
+        text1: "Invalid email or password!",
+      });
+    }
+
     updateState({ isLoading: false });
   };
+
   return (
     <View style={styles.container}>
       <TextInputWithLable
         label="Email"
-        placheHolder="enter your email"
+        placheHolder="Enter your Email"
         onChangeText={(email) => updateState({ email })}
       />
       <TextInputWithLable
         label="Password"
-        placheHolder="enter your password"
-        // isSecure={isSecure}
+        placheHolder="Enter your password"
         secureTextEntry={isSecure}
         onChangeText={(password) => updateState({ password })}
       />
 
       <ButtonWithLoader text="Login" onPress={onLogin} isLoading={isLoading} />
-
       <View style={{ marginVertical: 8 }} />
-
       <ButtonWithLoader
         text="Signup"
         onPress={() => navigation.navigate("Signup")}

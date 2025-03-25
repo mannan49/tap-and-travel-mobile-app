@@ -23,6 +23,19 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6c6dd4e7-8ae7-49b5-80a5-4e35becd2e03",
+        "STRIPE_PUBLISHABLE_KEY": "pk_test_51QMkUFKzfMgYIpCx3iDEwl4GbcNYQyEwhJKqGsc8BAuQ8h7pHFJqjhGR6LfImDlOojLfiV0DngTdZv1OBiv3w8c500a980IyyP"
+
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/6c6dd4e7-8ae7-49b5-80a5-4e35becd2e03"
     }
   }
 }

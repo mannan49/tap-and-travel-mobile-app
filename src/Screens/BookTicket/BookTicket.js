@@ -1,26 +1,104 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  Modal,
+  Pressable,
+} from "react-native";
+import { apiBaseUrl } from "../../config/urls";
+import { useNavigation } from "@react-navigation/native";
 
 const BookTicket = ({ route }) => {
-  const { busId } = route.params; // Access the busId passed from the previous screen
+  const { busId } = route.params;
+  const navigation = useNavigation();
   const [selectedBus, setSelectedBus] = useState(null);
+  const [selectedSeats, setSelectedSeats] = useState([]);
+  const [genderModalVisible, setGenderModalVisible] = useState(false);
 
   useEffect(() => {
-    // Fetch the selected bus data using the busId
     const fetchSelectedBus = async () => {
       try {
-        const response = await fetch(`${apiBaseUrl}/bus/${busId}`); // Fetch the bus details by busId
+        const response = await fetch(`${apiBaseUrl}/bus/${busId}`);
         const data = await response.json();
-        setSelectedBus(data); // Store the bus details
+        setSelectedBus(data);
       } catch (error) {
         console.error("Error fetching bus data:", error);
       }
     };
 
     if (busId) {
-      fetchSelectedBus(); // Fetch bus details when busId is available
+      fetchSelectedBus();
     }
   }, [busId]);
+
+  const toggleSeatSelection = (seat) => {
+    if (seat.booked) return;
+
+    const alreadySelected = selectedSeats.find(
+      (s) => s.seatNumber === seat.seatNumber
+    );
+
+    if (alreadySelected) {
+      setSelectedSeats((prevSeats) =>
+        prevSeats.filter((s) => s.seatNumber !== seat.seatNumber)
+      );
+    } else {
+      setSelectedSeats((prevSeats) => [
+        ...prevSeats,
+        { ...seat, gender: null },
+      ]);
+    }
+  };
+
+  const handleGenderSelection = (gender) => {
+    const updatedSeats = selectedSeats.map((seat) => ({
+      ...seat,
+      gender: gender,
+    }));
+    setSelectedSeats(updatedSeats);
+    setGenderModalVisible(false);
+
+    const totalAmount = selectedSeats?.length * selectedBus?.fare.actualPrice;
+    navigation.navigate("PaymentScreen", {
+      busId,
+      userId: "67de83adfd817d7dc56a0a04",
+      amount: totalAmount,
+      adminId: selectedBus?.busDetails?.adminId,
+      selectedSeats: selectedSeats,
+    });
+
+    // You can handle submission here
+    console.log("Selected Seats with Gender: ", updatedSeats);
+  };
+
+  const renderSeat = ({ item }) => {
+    const isBooked = item.booked;
+    const selectedSeat = selectedSeats.find(
+      (s) => s.seatNumber === item.seatNumber
+    );
+    const isSelected = !!selectedSeat;
+
+    let seatColor = "gray";
+    if (isBooked) {
+      seatColor = item.gender === "M" ? "#4a90e2" : "#e94b86"; // Blue / Pink
+    } else if (isSelected) {
+      seatColor = "green";
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.seat, { backgroundColor: seatColor }]}
+        onPress={() => toggleSeatSelection(item)}
+        disabled={isBooked}
+      >
+        <Text style={styles.seatText}>{item.seatNumber.split("-")[1]}</Text>
+        {isBooked && <Text style={styles.gender}>{item.gender}</Text>}
+      </TouchableOpacity>
+    );
+  };
 
   if (!selectedBus) {
     return (
@@ -32,9 +110,70 @@ const BookTicket = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      <Text>Bus ID: {selectedBus.id}</Text>
-      <Text>Bus Company: {selectedBus.adminName}</Text>
-      {/* Display other bus details here */}
+      <Text style={styles.title}>
+        {selectedBus?.route?.startCity} to {selectedBus?.route?.endCity}
+      </Text>
+      <Text style={styles.subtitle}>Select Your Seat</Text>
+
+      <FlatList
+        data={selectedBus.seats}
+        numColumns={4}
+        keyExtractor={(item) => item.seatNumber}
+        renderItem={renderSeat}
+        contentContainerStyle={styles.seatLayout}
+      />
+
+      {/* Show confirm button when seats are selected */}
+      {selectedSeats.length > 0 && (
+        <View style={styles.selectionInfo}>
+          <Text style={styles.selectionText}>
+            Selected Seats:{" "}
+            {selectedSeats.map((s) => s.seatNumber.split("-")[1]).join(", ")}
+          </Text>
+
+          <TouchableOpacity
+            style={styles.confirmButton}
+            onPress={() => setGenderModalVisible(true)}
+          >
+            <Text style={styles.confirmButtonText}>Confirm Your Bookings</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* Gender Selection Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={genderModalVisible}
+        onRequestClose={() => setGenderModalVisible(false)}
+      >
+        <View style={styles.modalBackground}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>Select Gender</Text>
+
+            <Pressable
+              style={[styles.genderButton, { backgroundColor: "#4a90e2" }]}
+              onPress={() => handleGenderSelection("M")}
+            >
+              <Text style={styles.genderButtonText}>Male</Text>
+            </Pressable>
+
+            <Pressable
+              style={[styles.genderButton, { backgroundColor: "#e94b86" }]}
+              onPress={() => handleGenderSelection("F")}
+            >
+              <Text style={styles.genderButtonText}>Female</Text>
+            </Pressable>
+
+            <TouchableOpacity
+              onPress={() => setGenderModalVisible(false)}
+              style={styles.cancelButton}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -42,184 +181,111 @@ const BookTicket = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingTop: 60, // Increased spacing from the top
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  subtitle: {
+    fontSize: 18,
+    color: '#7F8C8D',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  seatLayout: {
+    alignItems: 'center',
+    marginBottom: 40,
+  },
+  seat: {
+    width: 60,
+    height: 60,
+    margin: 10, // Slightly more space between seats
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 12,
+    backgroundColor: '#3498DB', // Example color for available seat
+  },
+  seatText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  gender: {
+    color: '#FFFFFF',
+    fontSize: 12,
+  },
+  selectionInfo: {
+    marginTop: 40,
+    alignItems: 'center',
+  },
+  selectionText: {
+    fontSize: 18,
+    color: '#34495E',
+    marginBottom: 20,
+  },
+  confirmButton: {
+    backgroundColor: '#1ABC9C',
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  confirmButtonText: {
+    color: '#FFFFFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  modalBackground: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  modalContainer: {
+    backgroundColor: '#FFFFFF',
+    marginHorizontal: 32,
+    padding: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#2C3E50',
+    marginBottom: 24,
+  },
+  genderButton: {
+    width: '80%',
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginVertical: 12,
+    alignItems: 'center',
+    backgroundColor: '#2980B9',
+  },
+  genderButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    marginTop: 20,
+  },
+  cancelButtonText: {
+    color: '#7F8C8D',
+    fontSize: 14,
   },
 });
 
+
 export default BookTicket;
-
-// import React, { useState } from "react";
-// import {
-//   View,
-//   Text,
-//   Button,
-//   Modal,
-//   TouchableOpacity,
-//   StyleSheet,
-// } from "react-native";
-
-// export const getBusData = async (busData) => {
-//     try {
-//       const response = await fetch(
-//         "https://tap-and-travel-backend.vercel.app/api/v1/bus/",
-//         {
-//           method: "POST",
-//           headers: {
-//             "Content-Type": "application/json",
-//           },
-//           body: JSON.stringify(busData),
-//         }
-//       );
-//       const data = await response.json();
-//       console.log("Parsed JSON data:", data);
-//     }
-//     catch (err) {
-//         const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
-//         console.error("Error in getting the bus :", errorMessage);
-//         return { success: false, message: errorMessage };
-//     }
-// }
-
-// const BookingTicketForm = ({ busData }) => {
-//   const [selectedSeat, setSelectedSeat] = useState(null);
-//   const [showGenderModal, setShowGenderModal] = useState(false);
-//   const [selectedGender, setSelectedGender] = useState(null);
-
-//   // Function to handle seat selection
-//   const handleSeatSelect = (seatNumber) => {
-//     setSelectedSeat(seatNumber);
-//     setShowGenderModal(true); // Show the gender selection modal
-//   };
-
-//   const handleGenderSelect = (gender) => {
-//     setSelectedGender(gender);
-//     setShowGenderModal(false); // Close the modal after gender selection
-//     // Proceed to booking, or do something else with the seat & gender
-//   };
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>Select Your Seat</Text>
-
-//       <View style={styles.seatContainer}>
-//         {busData.seats.map((seat, index) => (
-//           <TouchableOpacity
-//             key={index}
-//             style={[
-//               styles.seatButton,
-//               !seat.isAvailable && styles.seatUnavailable,
-//             ]}
-//             onPress={() =>
-//               seat.isAvailable && handleSeatSelect(seat.seatNumber)
-//             }
-//             disabled={!seat.isAvailable}
-//           >
-//             <Text style={styles.seatText}>{seat.seatNumber}</Text>
-//           </TouchableOpacity>
-//         ))}
-//       </View>
-
-//       {/* Modal for Gender Selection */}
-//       <Modal
-//         visible={showGenderModal}
-//         animationType="slide"
-//         transparent={true}
-//         onRequestClose={() => setShowGenderModal(false)}
-//       >
-//         <View style={styles.modalOverlay}>
-//           <View style={styles.modalContent}>
-//             <Text style={styles.modalTitle}>Select Gender</Text>
-//             <TouchableOpacity
-//               style={styles.modalButton}
-//               onPress={() => handleGenderSelect("Male")}
-//             >
-//               <Text style={styles.modalButtonText}>Male</Text>
-//             </TouchableOpacity>
-//             <TouchableOpacity
-//               style={styles.modalButton}
-//               onPress={() => handleGenderSelect("Female")}
-//             >
-//               <Text style={styles.modalButtonText}>Female</Text>
-//             </TouchableOpacity>
-//             <TouchableOpacity
-//               style={styles.modalButton}
-//               onPress={() => handleGenderSelect("Other")}
-//             >
-//               <Text style={styles.modalButtonText}>Other</Text>
-//             </TouchableOpacity>
-//           </View>
-//         </View>
-//       </Modal>
-//     </View>
-//   );
-// };
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     padding: 20,
-//     backgroundColor: "white",
-//   },
-//   title: {
-//     fontSize: 24,
-//     fontWeight: "bold",
-//     marginBottom: 20,
-//     textAlign: "center",
-//   },
-//   seatContainer: {
-//     flexDirection: "row",
-//     flexWrap: "wrap",
-//     justifyContent: "space-evenly",
-//   },
-//   seatButton: {
-//     width: 60,
-//     height: 60,
-//     borderRadius: 5,
-//     backgroundColor: "#4CAF50",
-//     justifyContent: "center",
-//     alignItems: "center",
-//     margin: 5,
-//   },
-//   seatUnavailable: {
-//     backgroundColor: "#B0BEC5",
-//   },
-//   seatText: {
-//     color: "white",
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-//   modalOverlay: {
-//     flex: 1,
-//     justifyContent: "center",
-//     alignItems: "center",
-//     backgroundColor: "rgba(0, 0, 0, 0.5)",
-//   },
-//   modalContent: {
-//     backgroundColor: "white",
-//     padding: 20,
-//     borderRadius: 10,
-//     width: 300,
-//   },
-//   modalTitle: {
-//     fontSize: 20,
-//     fontWeight: "bold",
-//     marginBottom: 20,
-//     textAlign: "center",
-//   },
-//   modalButton: {
-//     padding: 15,
-//     backgroundColor: "#4CAF50",
-//     borderRadius: 5,
-//     marginBottom: 10,
-//     alignItems: "center",
-//   },
-//   modalButtonText: {
-//     color: "white",
-//     fontSize: 16,
-//     fontWeight: "bold",
-//   },
-// });
-
-// export default BookingTicketForm;
