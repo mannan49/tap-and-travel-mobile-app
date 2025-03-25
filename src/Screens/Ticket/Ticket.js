@@ -37,7 +37,7 @@ const Ticket = () => {
 
 
 
-            const response = await fetch(`https://tap-and-travel-backend.vercel.app/api/v1/ticket/user/67573a03f33135240234eaa3`);
+            const response = await fetch(`https://tap-and-travel-backend.vercel.app/api/v1/ticket/user/${userId}`);
             const data = await response.json();
 
             // console.log('Tickets fetched:', data);
