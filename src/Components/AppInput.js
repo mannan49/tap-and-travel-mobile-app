@@ -36,7 +36,7 @@ const AppInput = ({
 
 const styles = StyleSheet.create({
   container: {
-    borderWidth: 1.5,
+    borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 0,
     marginVertical: 8,

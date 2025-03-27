@@ -13,6 +13,8 @@ import { jwtDecode } from "jwt-decode";
 import { AuthContext } from "../../context/AuthContext";
 import apiClient from "../../api/apiClient";
 import Toast from "react-native-toast-message";
+import AppInput from "../../Components/AppInput";
+import AppButton from "../../Components/Button";
 
 const Profile = () => {
   const [name, setName] = useState("");
@@ -146,16 +148,17 @@ const Profile = () => {
 
         {/* Name Input */}
         <Text style={styles.label}>Name</Text>
-        <TextInput
+        <AppInput
           style={styles.input}
           value={name}
           onChangeText={(text) => setName(text)}
           placeholder="Enter your name"
         />
 
+
         {/* Email Input (disabled) */}
         <Text style={styles.label}>Email</Text>
-        <TextInput
+        <AppInput
           style={[styles.input, { backgroundColor: "#ECF0F1" }]}
           value={email}
           editable={false}
@@ -163,52 +166,55 @@ const Profile = () => {
 
         {/* Phone Input */}
         <Text style={styles.label}>Phone Number</Text>
-        <TextInput
+        <AppInput
           style={styles.input}
           value={phoneNumber}
           onChangeText={(text) => setPhoneNumber(text)}
           placeholder="Enter your phone number"
-          keyboardType="phone-pad"
-        />
-
+          keyboardType="phone-pad" />
+        <View style={{ marginVertical: 8 }} />
         {/* Update Profile Button */}
-        <TouchableOpacity style={styles.saveButton} onPress={updateProfile}>
-          <Text style={styles.saveButtonText}>Update Profile</Text>
-        </TouchableOpacity>
+        <AppButton text="Update Profile" onPress={updateProfile} variant="secondary" />
+
 
         {/* Divider */}
         <View style={styles.divider} />
 
         {/* Change Password Section */}
         <Text style={styles.label}>Old Password</Text>
-        <TextInput
+        <AppInput
           style={styles.input}
           value={oldPassword}
           onChangeText={(text) => setOldPassword(text)}
           placeholder="Enter your old password"
           secureTextEntry
         />
+        {/* <TextInput
+          style={styles.input}
+          value={oldPassword}
+          onChangeText={(text) => setOldPassword(text)}
+          placeholder="Enter your old password"
+          secureTextEntry
+        /> */}
 
         <Text style={styles.label}>New Password</Text>
-        <TextInput
+        <AppInput
           style={styles.input}
           value={newPassword}
           onChangeText={(text) => setNewPassword(text)}
           placeholder="Enter new password"
           secureTextEntry
         />
+        <View style={{ marginVertical: 8 }} />
+        <AppButton text="Change Password" onPress={changePassword} variant="secondary" />
 
-        <TouchableOpacity style={styles.saveButton} onPress={changePassword}>
-          <Text style={styles.saveButtonText}>Change Password</Text>
-        </TouchableOpacity>
 
         {/* Divider */}
         <View style={styles.divider} />
 
         {/* Logout Button */}
-        <TouchableOpacity style={styles.logoutButton} onPress={logout}>
-          <Text style={styles.logoutButtonText}>Logout</Text>
-        </TouchableOpacity>
+        <AppButton text="Logout" onPress={logout} />
+
       </View>
     </ScrollView>
   );
@@ -243,14 +249,14 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: "bold",
     color: "#2C3E50",
-    marginBottom: 20,
+    marginBottom: 1,
     textAlign: "center",
   },
   label: {
     fontSize: 15,
     color: "#34495E",
     marginBottom: 6,
-    marginTop: 12,
+    marginTop: 6,
   },
   input: {
     backgroundColor: "#F4F6F8",
