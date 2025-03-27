@@ -15,6 +15,8 @@ import { format12time, formatDate } from "../../utils/helperFunction";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation hook
+import AppSelect from "../../Components/AppSelect";
+import AppDatePicker from "../../Components/AppDatePicker";
 
 const BookingForm = () => {
   const navigation = useNavigation();
@@ -81,7 +83,9 @@ const BookingForm = () => {
 
   const filterBuses = () => {
     const { fromCity, toCity, date } = formData;
-    const selectedDate = date ? new Date(date).toISOString().split("T")[0] : null;
+    const selectedDate = date
+      ? new Date(date).toISOString().split("T")[0]
+      : null;
 
     if (!selectedDate) {
       console.error("Invalid date selected");
@@ -93,7 +97,9 @@ const BookingForm = () => {
       const busEndCity = bus.route.endCity.trim().toLowerCase();
       const selectedFromCity = fromCity.trim().toLowerCase();
       const selectedToCity = toCity.trim().toLowerCase();
-      const busDate = bus.date ? new Date(bus.date).toISOString().split("T")[0] : null;
+      const busDate = bus.date
+        ? new Date(bus.date).toISOString().split("T")[0]
+        : null;
 
       return (
         busStartCity === selectedFromCity &&
@@ -132,6 +138,19 @@ const BookingForm = () => {
         ))}
       </Picker>
 
+      <AppSelect
+        items={cities.map((city) => ({ label: city, value: city }))}
+        onValueChange={(itemValue) => handleInputChange("fromCity", itemValue)}
+        value={formData.fromCity}
+        placeholder="Select From City"
+      />
+      <AppSelect
+        items={cities.map((city) => ({ label: city, value: city }))}
+        onValueChange={(itemValue) => handleInputChange("fromCity", itemValue)}
+        placeholder="Select To City"
+        value={formData.toCity}
+      />
+
       {/* To City Dropdown */}
       <Picker
         selectedValue={formData.toCity}
@@ -145,9 +164,20 @@ const BookingForm = () => {
       </Picker>
 
       {/* Date Input */}
-      <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
+      <TouchableOpacity
+        style={styles.input}
+        onPress={() => setShowDatePicker(true)}
+      >
         <Text style={styles.dateText}>{formData.date || "Select Date"}</Text>
       </TouchableOpacity>
+
+      <AppDatePicker
+        value={formData.date}
+        onChange={onDateChange}
+        placeholder="Select date"
+        variant="primary"
+        borderRadius={12}
+      />
 
       {showDatePicker && (
         <DateTimePicker
@@ -164,7 +194,9 @@ const BookingForm = () => {
       </TouchableOpacity>
 
       {/* Loading Indicator */}
-      {loading && <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />}
+      {loading && (
+        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
+      )}
 
       {/* Show filtered buses if search is done */}
       {hasSearched && (
@@ -175,25 +207,42 @@ const BookingForm = () => {
                 <Text style={styles.busCompany}>{bus.adminName}</Text>
                 <View style={styles.routeContainer}>
                   <Text style={styles.cityText}>{bus.route.startCity} </Text>
-                  <Icon name="arrow-right" size={18} color="black" style={styles.arrowIcon} />
+                  <Icon
+                    name="arrow-right"
+                    size={18}
+                    color="black"
+                    style={styles.arrowIcon}
+                  />
                   <Text style={styles.cityText}>{bus.route.endCity}</Text>
                 </View>
 
-                <Text style={styles.price}>Only in Rs. {bus.fare.actualPrice}</Text>
+                <Text style={styles.price}>
+                  Only in Rs. {bus.fare.actualPrice}
+                </Text>
                 <Text style={styles.dateTime}>
                   {formatDate(bus.date)} {bus.time}
                 </Text>
                 <Text style={styles.dateTime}>
                   {format12time(bus.departureTime)}
                   {"  "}
-                  <Icon name="arrow-right" size={18} color="black" style={styles.arrowIcon} />
+                  <Icon
+                    name="arrow-right"
+                    size={18}
+                    color="black"
+                    style={styles.arrowIcon}
+                  />
                   {"  "}
                   {format12time(bus.arrivalTime)}
                 </Text>
-                <Text style={styles.stops}>Stops: {bus.route.stops?.length || 0}</Text>
+                <Text style={styles.stops}>
+                  Stops: {bus.route.stops?.length || 0}
+                </Text>
 
                 {/* Book Button */}
-                <TouchableOpacity style={styles.bookButton} onPress={() => handleBookTicket(bus._id)}>
+                <TouchableOpacity
+                  style={styles.bookButton}
+                  onPress={() => handleBookTicket(bus._id)}
+                >
                   <Text style={styles.bookButtonText}>Book my Ticket</Text>
                 </TouchableOpacity>
               </View>
@@ -212,51 +261,51 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 40,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
   },
   title: {
     fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    color: '#2C3E50',
+    fontWeight: "bold",
+    textAlign: "center",
+    color: "#2C3E50",
     marginBottom: 30,
   },
   picker: {
     height: 50,
-    borderColor: '#BDC3C7',
+    borderColor: "#BDC3C7",
     borderWidth: 1,
     borderRadius: 8,
     marginBottom: 20,
     paddingHorizontal: 10,
-    backgroundColor: '#F8F9FA',
-    justifyContent: 'center',
+    backgroundColor: "#F8F9FA",
+    justifyContent: "center",
   },
   input: {
     height: 50,
-    borderColor: '#BDC3C7',
+    borderColor: "#BDC3C7",
     borderWidth: 1,
     borderRadius: 8,
     paddingHorizontal: 10,
-    justifyContent: 'center',
-    backgroundColor: '#F8F9FA',
+    justifyContent: "center",
+    backgroundColor: "#F8F9FA",
     marginBottom: 20,
   },
   dateText: {
     fontSize: 16,
-    color: '#34495E',
+    color: "#34495E",
   },
   searchButton: {
-    backgroundColor: '#3498DB',
+    backgroundColor: "#3498DB",
     paddingVertical: 14,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 30,
     elevation: 2,
   },
   searchButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 18,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   loader: {
     marginTop: 20,
@@ -265,65 +314,64 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   busCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     padding: 16,
     marginBottom: 20,
     borderRadius: 12,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 2,
-    borderColor: '#ECECEC',
+    borderColor: "#ECECEC",
     borderWidth: 1,
   },
   busCompany: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#2C3E50',
+    fontWeight: "bold",
+    color: "#2C3E50",
     marginBottom: 10,
   },
   routeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
   },
   cityText: {
     fontSize: 16,
-    color: '#34495E',
+    color: "#34495E",
   },
   arrowIcon: {
     marginHorizontal: 8,
   },
   price: {
     fontSize: 16,
-    color: '#27AE60',
-    fontWeight: '600',
+    color: "#27AE60",
+    fontWeight: "600",
     marginBottom: 6,
   },
   dateTime: {
     fontSize: 14,
-    color: '#7F8C8D',
+    color: "#7F8C8D",
     marginBottom: 4,
   },
   stops: {
     fontSize: 14,
-    color: '#7F8C8D',
+    color: "#7F8C8D",
     marginBottom: 12,
   },
   bookButton: {
-    backgroundColor: '#3498DB',
+    backgroundColor: "#3498DB",
     paddingVertical: 14,
     borderRadius: 8,
-    alignItems: 'center',
+    alignItems: "center",
     elevation: 2,
   },
   bookButtonText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
 });
-
 
 export default BookingForm;

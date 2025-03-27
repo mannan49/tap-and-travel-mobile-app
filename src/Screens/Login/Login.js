@@ -10,6 +10,8 @@ import { useDispatch } from "react-redux";
 import { initializeStore } from "../../store/intializeStore";
 import { AuthContext } from "../../context/AuthContext";
 import Toast from "react-native-toast-message";
+import AppButton from "../../Components/Button";
+import AppInput from "../../Components/AppInput";
 
 export const loginUser = async (userData) => {
   try {
@@ -77,6 +79,12 @@ const Login = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <AppInput
+        placeholder="Enter your email"
+        value={email}
+        onChangeText={(email) => updateState({ email })}
+      />
+
       <TextInputWithLable
         label="Email"
         placheHolder="Enter your Email"
@@ -88,7 +96,12 @@ const Login = ({ navigation }) => {
         secureTextEntry={isSecure}
         onChangeText={(password) => updateState({ password })}
       />
-
+      <AppButton
+        text="Login"
+        onPress={onLogin}
+        variant="secondary"
+        isLoading={isLoading}
+      />
       <ButtonWithLoader text="Login" onPress={onLogin} isLoading={isLoading} />
       <View style={{ marginVertical: 8 }} />
       <ButtonWithLoader
