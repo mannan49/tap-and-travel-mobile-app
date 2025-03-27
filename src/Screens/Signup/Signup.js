@@ -5,6 +5,8 @@ import TextInputWithLable from "../../Components/TextInputWithLabel";
 
 import validator from "../../utils/validation";
 import { showError } from "../../utils/helperFunction";
+import AppInput from "../../Components/AppInput";
+import AppButton from "../../Components/Button";
 
 const Signup = ({ navigation }) => {
   const [state, setState] = useState({
@@ -30,7 +32,7 @@ const Signup = ({ navigation }) => {
     return true;
   };
 
-  const onLogin = async () => {
+  const onSignUp = async () => {
     const checkValid = isValidData();
     if (checkValid) {
       navigation.navigate("Signup");
@@ -38,25 +40,28 @@ const Signup = ({ navigation }) => {
   };
   return (
     <View style={styles.container}>
-      <TextInputWithLable
+      <AppInput
         label="User name"
-        placheHolder="enter your username"
+        placeholder="Enter your Username"
         onChangeText={(userName) => updateState({ userName })}
       />
-      <TextInputWithLable
-        label="Email"
-        placheHolder="enter your email"
+      <AppInput
+        placeholder="Enter your Email"
         onChangeText={(email) => updateState({ email })}
       />
-      <TextInputWithLable
-        label="Password"
-        placheHolder="enter your password"
-        // isSecure={isSecure}
+      <AppInput
+        placeholder="Enter your Password"
         secureTextEntry={isSecure}
         onChangeText={(password) => updateState({ password })}
       />
 
-      <ButtonWithLoader text="Signup" onPress={onLogin} isLoading={isLoading} />
+      <View style={{ marginVertical: 8 }} />
+      <AppButton
+        text="SignUp"
+        onPress={onSignUp}
+        variant="secondary"
+        isLoading={isLoading}
+      />
     </View>
   );
 };
@@ -66,6 +71,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     backgroundColor: "white",
+    justifyContent: "center",
   },
 });
 

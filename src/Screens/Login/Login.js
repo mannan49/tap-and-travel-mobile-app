@@ -84,29 +84,26 @@ const Login = ({ navigation }) => {
         value={email}
         onChangeText={(email) => updateState({ email })}
       />
-
-      <TextInputWithLable
-        label="Email"
-        placheHolder="Enter your Email"
-        onChangeText={(email) => updateState({ email })}
-      />
-      <TextInputWithLable
-        label="Password"
-        placheHolder="Enter your password"
+      <AppInput
+        placeholder="Enter your password"
+        value={password}
         secureTextEntry={isSecure}
         onChangeText={(password) => updateState({ password })}
       />
+
+      <View style={{ marginVertical: 8 }} />
       <AppButton
         text="Login"
         onPress={onLogin}
         variant="secondary"
         isLoading={isLoading}
       />
-      <ButtonWithLoader text="Login" onPress={onLogin} isLoading={isLoading} />
       <View style={{ marginVertical: 8 }} />
-      <ButtonWithLoader
-        text="Signup"
+      <AppButton
+        text="Sign Up"
         onPress={() => navigation.navigate("Signup")}
+        variant="secondary"
+        isLoading={isLoading}
       />
     </View>
   );
@@ -117,6 +114,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 24,
     backgroundColor: "white",
+    justifyContent: "center", // Align vertically (Y-axis)]
   },
 });
 
