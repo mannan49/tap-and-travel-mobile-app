@@ -10,6 +10,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
 import apiClient from '../../api/apiClient';
+import AppButton from '../../Components/Button';
 
 const Ticket = () => {
     const [tickets, setTickets] = useState([]);
@@ -38,7 +39,7 @@ const Ticket = () => {
 
 
 
-            const {data} = await apiClient(`/ticket/user/${userId}`);
+            const { data } = await apiClient(`/ticket/user/${userId}`);
             setTickets(data);
             filterTickets(data, selectedTab); // ⬅️ filter tickets after fetching
         } catch (error) {
@@ -94,25 +95,12 @@ const Ticket = () => {
 
             {/* ⬇️ Tabs */}
             <View style={styles.tabsContainer}>
-                <TouchableOpacity
-                    style={[
-                        styles.tabButton,
-                        selectedTab === 'active' && styles.activeTabButton,
-                    ]}
-                    onPress={() => setSelectedTab('active')}
-                >
-                    <Text style={styles.tabButtonText}>Active</Text>
-                </TouchableOpacity>
+                <AppButton text="Active"
+                    onPress={() => setSelectedTab('active')} />
+                <View style={{ marginHorizontal: 8 }} />
+                <AppButton text="Past"
+                    onPress={() => setSelectedTab('past')} />
 
-                <TouchableOpacity
-                    style={[
-                        styles.tabButton,
-                        selectedTab === 'past' && styles.activeTabButton,
-                    ]}
-                    onPress={() => setSelectedTab('past')}
-                >
-                    <Text style={styles.tabButtonText}>Past</Text>
-                </TouchableOpacity>
             </View>
 
             <FlatList
