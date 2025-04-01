@@ -17,6 +17,7 @@ import { Picker } from "@react-native-picker/picker";
 import { useNavigation } from "@react-navigation/native"; // Import useNavigation hook
 import AppSelect from "../../Components/AppSelect";
 import AppDatePicker from "../../Components/AppDatePicker";
+import AppButton from "../../Components/Button";
 
 const BookingForm = () => {
   const navigation = useNavigation();
@@ -150,10 +151,9 @@ const BookingForm = () => {
       />
 
       {/* Submit Button */}
-      
-      <TouchableOpacity style={styles.searchButton} onPress={handleSubmit}>
-        <Text style={styles.searchButtonText}>Search</Text>
-      </TouchableOpacity>
+      <AppButton text="Search"
+        onPress={handleSubmit}
+        variant="secondary" />
 
       {/* Loading Indicator */}
       {loading && (
@@ -201,12 +201,7 @@ const BookingForm = () => {
                 </Text>
 
                 {/* Book Button */}
-                <TouchableOpacity
-                  style={styles.bookButton}
-                  onPress={() => handleBookTicket(bus._id)}
-                >
-                  <Text style={styles.bookButtonText}>Book my Ticket</Text>
-                </TouchableOpacity>
+                <AppButton text="Book my Ticket" variant="secondary" onPress={() => handleBookTicket(bus._id)} />
               </View>
             ))
           ) : (
