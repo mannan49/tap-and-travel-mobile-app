@@ -44,7 +44,6 @@ const BookingForm = () => {
 
       setBuses(filteredData);
       extractCities(filteredData);
-      // console.log("Fetched Buses:", filteredData);
     } catch (error) {
       console.error("Error fetching buses:", error);
     }
@@ -78,7 +77,6 @@ const BookingForm = () => {
     const formattedDate = new Date(selectedDate).toISOString().split("T")[0];
 
     setFormData({ ...formData, date: formattedDate });
-    console.log("Selected Date:", formattedDate);
   };
 
 

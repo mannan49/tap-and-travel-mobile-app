@@ -70,9 +70,6 @@ const BookTicket = ({ route }) => {
       adminId: selectedBus?.busDetails?.adminId,
       selectedSeats: selectedSeats,
     });
-
-    // You can handle submission here
-    console.log("Selected Seats with Gender: ", updatedSeats);
   };
 
   const renderSeat = ({ item }) => {

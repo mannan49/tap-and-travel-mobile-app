@@ -28,7 +28,6 @@ const Ticket = () => {
             }
 
             const decoded = jwtDecode(token);
-            console.log('Decoded JWT:', decoded);
 
             const userId = decoded?.sub;
 
