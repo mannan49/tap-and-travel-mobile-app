@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { apiBaseUrl } from "../../config/urls";
 import { useNavigation } from "@react-navigation/native";
+import AppButton from "../../Components/Button";
 
 const BookTicket = ({ route }) => {
   const { busId } = route.params;
@@ -130,13 +131,8 @@ const BookTicket = ({ route }) => {
             Selected Seats:{" "}
             {selectedSeats.map((s) => s.seatNumber.split("-")[1]).join(", ")}
           </Text>
-
-          <TouchableOpacity
-            style={styles.confirmButton}
-            onPress={() => setGenderModalVisible(true)}
-          >
-            <Text style={styles.confirmButtonText}>Confirm Your Bookings</Text>
-          </TouchableOpacity>
+          <AppButton variant="secondary" text="Confirm Your Bookings" onPress={() => setGenderModalVisible(true)} />
+          <View style={{ marginVertical: 8 }} />
         </View>
       )}
 
@@ -150,20 +146,9 @@ const BookTicket = ({ route }) => {
         <View style={styles.modalBackground}>
           <View style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Select Gender</Text>
-
-            <Pressable
-              style={[styles.genderButton, { backgroundColor: "#4a90e2" }]}
-              onPress={() => handleGenderSelection("M")}
-            >
-              <Text style={styles.genderButtonText}>Male</Text>
-            </Pressable>
-
-            <Pressable
-              style={[styles.genderButton, { backgroundColor: "#e94b86" }]}
-              onPress={() => handleGenderSelection("F")}
-            >
-              <Text style={styles.genderButtonText}>Female</Text>
-            </Pressable>
+            <AppButton style={{ width: 150 }} text="Male" variant="secondary" onPress={() => handleGenderSelection("M")} />
+            <View style={{ marginVertical: 8 }} />
+            <AppButton style={{ width: 150 }} text="Female" variant="secondary" onPress={() => handleGenderSelection("F")} />
 
             <TouchableOpacity
               onPress={() => setGenderModalVisible(false)}
