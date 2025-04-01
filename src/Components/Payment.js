@@ -11,6 +11,8 @@ import { apiBaseUrl, PAYMENT_INTENT } from "../config/urls";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../api/apiClient";
 
+
+
 const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
   const navigation = useNavigation();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();

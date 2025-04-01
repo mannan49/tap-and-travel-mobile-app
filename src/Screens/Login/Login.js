@@ -1,13 +1,9 @@
 import React, { useContext, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
-import ButtonWithLoader from "../../Components/ButtonWithLoader";
-import TextInputWithLable from "../../Components/TextInputWithLabel";
+import { View, StyleSheet } from "react-native";
 import validator from "../../utils/validation";
 import { showError } from "../../utils/helperFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { LOGIN } from "../../config/urls";
-import { useDispatch } from "react-redux";
-import { initializeStore } from "../../store/intializeStore";
 import { AuthContext } from "../../context/AuthContext";
 import Toast from "react-native-toast-message";
 import AppButton from "../../Components/Button";
