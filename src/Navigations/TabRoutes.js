@@ -18,7 +18,7 @@ const TabRoutes = () => {
       )}
       initialRouteName="Home"
       screenOptions={{
-        tabBarActiveTintColor: "tomato", // Active tab color
+        tabBarActiveTintColor: "292966", // Active tab color
         tabBarInactiveTintColor: "gray", // Inactive tab color
         tabBarStyle: { backgroundColor: "white" }, // Tab bar background color
         headerShown: false

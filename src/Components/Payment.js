@@ -10,6 +10,9 @@ import Toast from "react-native-toast-message";
 import { apiBaseUrl, PAYMENT_INTENT } from "../config/urls";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../api/apiClient";
+import AppButton from "./Button";
+
+
 
 const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
   const navigation = useNavigation();
@@ -116,8 +119,8 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
   };
 
   return (
-    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-      <Button title="Pay Now" onPress={openPaymentSheet} disabled={loading} />
+    <View>
+      <AppButton text="Pay Now" onPress={openPaymentSheet} disabled={loading} />
     </View>
   );
 };
