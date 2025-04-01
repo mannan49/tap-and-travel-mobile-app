@@ -71,15 +71,15 @@ const BookingForm = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const onDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || formData.date;
-    const formattedDate = currentDate
-      ? new Date(currentDate).toISOString().split("T")[0]
-      : null;
+  const onDateChange = (selectedDate) => {
+    if (!selectedDate) return;
 
-    setShowDatePicker(false);
+    const formattedDate = new Date(selectedDate).toISOString().split("T")[0];
+
     setFormData({ ...formData, date: formattedDate });
+    console.log("Selected Date:", formattedDate);
   };
+
 
   const filterBuses = () => {
     const { fromCity, toCity, date } = formData;
@@ -126,50 +126,20 @@ const BookingForm = () => {
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Bus Booking Form</Text>
 
-      {/* From City Dropdown */}
-      <Picker
-        selectedValue={formData.fromCity}
-        style={styles.picker}
-        onValueChange={(itemValue) => handleInputChange("fromCity", itemValue)}
-      >
-        <Picker.Item label="Select From City" value="" />
-        {cities.map((city, index) => (
-          <Picker.Item key={index} label={city} value={city} />
-        ))}
-      </Picker>
-
       <AppSelect
+        selectedValue={formData.fromCity}
         items={cities.map((city) => ({ label: city, value: city }))}
         onValueChange={(itemValue) => handleInputChange("fromCity", itemValue)}
         value={formData.fromCity}
         placeholder="Select From City"
       />
       <AppSelect
+        selectedValue={formData.toCity}
         items={cities.map((city) => ({ label: city, value: city }))}
-        onValueChange={(itemValue) => handleInputChange("fromCity", itemValue)}
+        onValueChange={(itemValue) => handleInputChange("toCity", itemValue)}
         placeholder="Select To City"
         value={formData.toCity}
       />
-
-      {/* To City Dropdown */}
-      <Picker
-        selectedValue={formData.toCity}
-        style={styles.picker}
-        onValueChange={(itemValue) => handleInputChange("toCity", itemValue)}
-      >
-        <Picker.Item label="Select To City" value="" />
-        {cities.map((city, index) => (
-          <Picker.Item key={index} label={city} value={city} />
-        ))}
-      </Picker>
-
-      {/* Date Input */}
-      <TouchableOpacity
-        style={styles.input}
-        onPress={() => setShowDatePicker(true)}
-      >
-        <Text style={styles.dateText}>{formData.date || "Select Date"}</Text>
-      </TouchableOpacity>
 
       <AppDatePicker
         value={formData.date}
@@ -179,16 +149,8 @@ const BookingForm = () => {
         borderRadius={12}
       />
 
-      {showDatePicker && (
-        <DateTimePicker
-          value={new Date(formData.date || new Date())}
-          mode="date"
-          display="default"
-          onChange={onDateChange}
-        />
-      )}
-
       {/* Submit Button */}
+      
       <TouchableOpacity style={styles.searchButton} onPress={handleSubmit}>
         <Text style={styles.searchButtonText}>Search</Text>
       </TouchableOpacity>
