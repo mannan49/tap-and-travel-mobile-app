@@ -22,7 +22,10 @@ const OtpVerification = ({ route }) => {
 
     const onVerifyOtp = async () => {
         if (otp.length !== 6) {
-            showError("Enter a valid 6-digit OTP");
+            Toast.show({
+                type: "error",
+                text1: "Enter a valid 6 digit Otp!",
+            });
             return;
         }
 
@@ -31,11 +34,17 @@ const OtpVerification = ({ route }) => {
             const response = await apiClient.post("/user/verify-otp", { email, otp });
 
             if (response.data) {
-                showSuccess("OTP Verified!");
+                Toast.show({
+                    type: "success",
+                    text1: "Otp Verified , Login To Continue !",
+                });
                 navigation.navigate("Login"); // Navigate to home screen after verification
             }
         } catch (error) {
-            showError(error.response?.data?.message || "OTP verification failed");
+            Toast.show({
+                type: "error",
+                text1: "Otp Verification Failed !",
+            });
         } finally {
             setIsLoading(false);
         }
@@ -46,10 +55,16 @@ const OtpVerification = ({ route }) => {
 
         try {
             await apiClient.post("/user/resend-otp", { email });
-            showSuccess("OTP Resent!");
+            Toast.show({
+                type: "success",
+                text1: "Otp Resent",
+            });
             setResendTimer(30);
         } catch (error) {
-            showError("Failed to resend OTP");
+            Toast.show({
+                type: "error",
+                text1: "Failed to Resend Otp!",
+            });
         }
     };
 

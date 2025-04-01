@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import AppInput from "../../Components/AppInput";
 import AppButton from "../../Components/Button";
-import { showError, showSuccess } from "../../utils/helperFunction";
 import apiClient from "../../api/apiClient";
+import Toast from "react-native-toast-message";
 
 const Signup = ({ navigation }) => {
   const [state, setState] = useState({
@@ -29,11 +29,17 @@ const Signup = ({ navigation }) => {
 
   const isValidData = () => {
     if (!state.name || !state.email || !state.password || !state.phoneNumber) {
-      showError("All fields are required");
+      Toast.show({
+        type: "error",
+        text1: "All fields are required!",
+      });
       return false;
     }
     if (state.password !== state.confirmPassword) {
-      showError("Passwords do not match!");
+      Toast.show({
+        type: "error",
+        text1: "Passwords doesn't match!",
+      });
       return false;
     }
     return true;
@@ -53,11 +59,17 @@ const Signup = ({ navigation }) => {
       });
 
       if (response.data) {
-        showSuccess(response.data.message);
+        Toast.show({
+          type: "success",
+          text1: "Otp sent to your email",
+        });
         navigation.navigate("OtpVerification", { email: state.email });
       }
     } catch (error) {
-      showError(error.response?.data?.message || "Signup failed");
+      Toast.show({
+        type: "error",
+        text1: "SignUp Failed!",
+      });
     } finally {
       updateState({ isLoading: false });
     }
