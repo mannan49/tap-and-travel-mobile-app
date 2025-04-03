@@ -53,8 +53,6 @@ export async function apiReq(
 			.catch(error => {
 				if (error && error.response && error.response.status === 401) {
 					clearUserData();
-					// NavigationService.resetNavigation();
-					//NavigationService.navigate('loginUsingEmailScreen');
 					dispatch({
 						type: types.CLEAR_REDUX_STATE,
 						payload: {}
