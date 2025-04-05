@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import validator from "../../utils/validation";
 import { showError } from "../../utils/helperFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -75,6 +75,7 @@ const Login = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
       <AppInput
         placeholder="Enter your email"
         value={email}
@@ -110,6 +111,12 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: "white",
     justifyContent: "center", // Align vertically (Y-axis)]
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginBottom: 20,
   },
 });
 

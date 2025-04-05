@@ -4,6 +4,7 @@ import AppButton from "../../Components/Button";
 import { showError, showSuccess } from "../../utils/helperFunction";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../../api/apiClient";
+import Toast from "react-native-toast-message";
 
 const OtpVerification = ({ route }) => {
     const navigation = useNavigation();
@@ -24,7 +25,7 @@ const OtpVerification = ({ route }) => {
         if (otp.length !== 6) {
             Toast.show({
                 type: "error",
-                text1: "Enter a valid 6 digit Otp!",
+                text1: "Enter 6 digit Otp !",
             });
             return;
         }
@@ -36,14 +37,14 @@ const OtpVerification = ({ route }) => {
             if (response.data) {
                 Toast.show({
                     type: "success",
-                    text1: "Otp Verified , Login To Continue !",
+                    text1: "Otp Verified, Login to Continue !",
                 });
                 navigation.navigate("Login"); // Navigate to home screen after verification
             }
         } catch (error) {
             Toast.show({
                 type: "error",
-                text1: "Otp Verification Failed !",
+                text1: "Otp Verification Failed",
             });
         } finally {
             setIsLoading(false);
@@ -57,13 +58,13 @@ const OtpVerification = ({ route }) => {
             await apiClient.post("/user/resend-otp", { email });
             Toast.show({
                 type: "success",
-                text1: "Otp Resent",
+                text1: "Otp Resent!",
             });
             setResendTimer(30);
         } catch (error) {
             Toast.show({
                 type: "error",
-                text1: "Failed to Resend Otp!",
+                text1: "Failed to resend Otp!",
             });
         }
     };
