@@ -159,59 +159,74 @@ const BookingForm = () => {
       )}
 
       {/* Show filtered buses if search is done */}
-      {hasSearched && (
-        <View style={styles.results}>
-          {filteredBuses.length > 0 ? (
-            filteredBuses.map((bus, index) => (
-              <View key={index} style={styles.busCard}>
-                <Text style={styles.busCompany}>{bus.adminName}</Text>
-                <View style={styles.routeContainer}>
-                  <Text style={styles.cityText}>{bus.route.startCity} </Text>
-                  <Icon
-                    name="arrow-right"
-                    size={18}
-                    color="black"
-                    style={styles.arrowIcon}
-                  />
-                  <Text style={styles.cityText}>{bus.route.endCity}</Text>
-                </View>
+      <View style={styles.results}>
+        <Text style={styles.resultsTitle}>
+          {hasSearched ? "Search Results" : "All Available Buses"}
+        </Text>
 
-                <Text style={styles.price}>
-                  Only in Rs. {bus.fare.actualPrice}
-                </Text>
-                <Text style={styles.dateTime}>
-                  {formatDate(bus.date)} {bus.time}
-                </Text>
-                <Text style={styles.dateTime}>
-                  {format12time(bus.departureTime)}
-                  {"  "}
-                  <Icon
-                    name="arrow-right"
-                    size={18}
-                    color="black"
-                    style={styles.arrowIcon}
-                  />
-                  {"  "}
-                  {format12time(bus.arrivalTime)}
-                </Text>
-                <Text style={styles.stops}>
-                  Stops: {bus.route.stops?.length || 0}
-                </Text>
-
-                {/* Book Button */}
-                <AppButton text="Book my Ticket" variant="secondary" onPress={() => handleBookTicket(bus._id)} />
+        {(hasSearched ? filteredBuses : buses).length > 0 ? (
+          (hasSearched ? filteredBuses : buses).map((bus, index) => (
+            <View key={index} style={styles.busCard}>
+              <Text style={styles.busCompany}>{bus.adminName}</Text>
+              <View style={styles.routeContainer}>
+                <Text style={styles.cityText}>{bus.route.startCity} </Text>
+                <Icon
+                  name="arrow-right"
+                  size={18}
+                  color="black"
+                  style={styles.arrowIcon}
+                />
+                <Text style={styles.cityText}>{bus.route.endCity}</Text>
               </View>
-            ))
-          ) : (
-            <Text>No buses found</Text>
-          )}
-        </View>
-      )}
+
+              <Text style={styles.price}>
+                Only in Rs. {bus.fare.actualPrice}
+              </Text>
+              <Text style={styles.dateTime}>
+                {formatDate(bus.date)} {bus.time}
+              </Text>
+              <Text style={styles.dateTime}>
+                {format12time(bus.departureTime)}
+                {"  "}
+                <Icon
+                  name="arrow-right"
+                  size={18}
+                  color="black"
+                  style={styles.arrowIcon}
+                />
+                {"  "}
+                {format12time(bus.arrivalTime)}
+              </Text>
+              <Text style={styles.stops}>
+                Stops: {bus.route.stops?.length || 0}
+              </Text>
+
+              {/* Book Button */}
+              <AppButton
+                text="Book my Ticket"
+                variant="secondary"
+                onPress={() => handleBookTicket(bus._id)}
+              />
+            </View>
+          ))
+        ) : (
+          <Text>No buses found</Text>
+        )}
+      </View>
+
     </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
+  resultsTitle: {
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#2C3E50",
+    textAlign: "center",
+  },
+
   container: {
     flex: 1,
     paddingHorizontal: 20,
