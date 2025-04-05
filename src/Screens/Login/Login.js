@@ -99,7 +99,6 @@ const Login = ({ navigation }) => {
         text="Sign Up"
         onPress={() => navigation.navigate("Signup")}
         variant="secondary"
-        isLoading={isLoading}
       />
     </View>
   );
