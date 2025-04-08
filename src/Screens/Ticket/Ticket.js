@@ -94,11 +94,12 @@ const Ticket = () => {
 
             {/* ⬇️ Tabs */}
             <View style={styles.tabsContainer}>
-                <AppButton text="Active"
+                <AppButton text="Active" variant={selectedTab === 'active' ? 'primary' : 'secondary'}
                     onPress={() => setSelectedTab('active')} />
                 <View style={{ marginHorizontal: 8 }} />
                 <AppButton text="Past"
-                    onPress={() => setSelectedTab('past')} />
+                    onPress={() => setSelectedTab('past')}
+                    variant={selectedTab === 'past' ? 'primary' : 'secondary'} />
 
             </View>
 
