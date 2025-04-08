@@ -229,10 +229,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   container: {
-    padding: 20,
+    padding: 35,
     backgroundColor: "#FFFFFF",
-    marginHorizontal: 16,
-    marginTop: 40,
+    marginHorizontal: 0,
+    marginTop: 0,
     borderRadius: 12,
     shadowColor: "#000000",
     shadowOffset: { width: 0, height: 2 },
