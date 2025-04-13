@@ -15,6 +15,7 @@ import apiClient from "../../api/apiClient";
 import Toast from "react-native-toast-message";
 import AppInput from "../../Components/AppInput";
 import AppButton from "../../Components/Button";
+import RFIDOrderModal from "./RFIDOrderModal";
 
 const Profile = () => {
   const [name, setName] = useState("");
@@ -26,10 +27,8 @@ const Profile = () => {
   const [showOrderForm, setShowOrderForm] = useState(false);
 
   // Order form state
-  const [province, setProvince] = useState("");
-  const [city, setCity] = useState("");
-  const [postalCode, setPostalCode] = useState("");
-  const [address, setAddress] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedAddress, setSelectedAddress] = useState(null);
 
   const { logout } = useContext(AuthContext);
 
@@ -109,26 +108,69 @@ const Profile = () => {
     setLoading(false);
   };
 
-  const submitRFIDOrder = async () => {
-    if (!province || !city || !postalCode || !address) {
+  const handleModalSubmit = async (addressData) => {
+    setSelectedAddress(addressData);
+    if (
+      !addressData?.province ||
+      !addressData?.city ||
+      !addressData?.postalCode ||
+      !addressData?.address
+    ) {
       Toast.show({ type: "info", text1: "Please fill all the fields" });
       return;
     }
-
     setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
       const { sub: userId } = jwtDecode(token);
 
-      await apiClient.post("/rfid-card", {
+      const payload = {
         userId,
-        province,
-        city,
-        postalCode,
-        address,
-      });
+        address: addressData,
+        RFIDCardStatus: "booked",
+      };
 
-      Toast.show({ type: "success", text1: "RFID card requested successfully" });
+      await apiClient.patch("/user/update-profile", payload);
+
+      Toast.show({
+        type: "success",
+        text1: "Your RFID Card will be delivered soon.",
+      });
+      setShowOrderForm(false);
+
+      // Clear form
+      setSelectedAddress(null);
+    } catch (error) {
+      console.error(error);
+      Toast.show({ type: "error", text1: "Failed to request RFID card" });
+    }
+    setLoading(false);
+  };
+
+  const submitRFIDOrder = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const { sub: userId } = jwtDecode(token);
+
+      const payload = {
+        userId,
+        address: {
+          province,
+          city,
+          postalCode,
+          address,
+        },
+        RFIDCardStatus: "booked",
+      };
+
+      console.log("Payload", payload);
+
+      await apiClient.patch("/user/update-profile", payload);
+
+      Toast.show({
+        type: "success",
+        text1: "Your RFID Card will be delivered soon.",
+      });
       setShowOrderForm(false);
 
       // Clear form
@@ -157,10 +199,19 @@ const Profile = () => {
         <Text style={styles.header}>Profile Settings</Text>
 
         <Text style={styles.label}>Name</Text>
-        <AppInput style={styles.input} value={name} onChangeText={setName} placeholder="Enter your name" />
+        <AppInput
+          style={styles.input}
+          value={name}
+          onChangeText={setName}
+          placeholder="Enter your name"
+        />
 
         <Text style={styles.label}>Email</Text>
-        <AppInput style={[styles.input, { backgroundColor: "#ECF0F1" }]} value={email} editable={false} />
+        <AppInput
+          style={[styles.input, { backgroundColor: "#ECF0F1" }]}
+          value={email}
+          editable={false}
+        />
 
         <Text style={styles.label}>Phone Number</Text>
         <AppInput
@@ -172,7 +223,11 @@ const Profile = () => {
         />
 
         <View style={{ marginVertical: 8 }} />
-        <AppButton text="Update Profile" onPress={updateProfile} variant="secondary" />
+        <AppButton
+          text="Update Profile"
+          onPress={updateProfile}
+          variant="secondary"
+        />
 
         <View style={styles.divider} />
 
@@ -195,46 +250,45 @@ const Profile = () => {
         />
 
         <View style={{ marginVertical: 8 }} />
-        <AppButton text="Change Password" onPress={changePassword} variant="secondary" />
+        <AppButton
+          text="Change Password"
+          onPress={changePassword}
+          variant="secondary"
+        />
 
         <View style={styles.divider} />
 
-        <AppButton text="Order RFID Card" variant="secondary" onPress={() => setShowOrderForm(true)} />
+        <AppButton
+          text="Order RFID Card"
+          variant="secondary"
+          onPress={() => setShowOrderForm(true)}
+        />
 
         <View style={styles.divider} />
 
         <AppButton text="Logout" onPress={logout} />
 
         {/* RFID Order Modal */}
-        <Modal visible={showOrderForm} transparent animationType="slide">
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalHeader}>Enter Your Address</Text>
-
-              <Text style={styles.label}>Province</Text>
-              <AppInput value={province} onChangeText={setProvince} placeholder="Enter province" />
-
-              <Text style={styles.label}>City</Text>
-              <AppInput value={city} onChangeText={setCity} placeholder="Enter city" />
-
-              <Text style={styles.label}>Postal Code</Text>
-              <AppInput value={postalCode} onChangeText={setPostalCode} placeholder="Postal Code" keyboardType="numeric" />
-
-              <Text style={styles.label}>Address</Text>
-              <AppInput value={address} onChangeText={setAddress} placeholder="Complete address" />
-
-              <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 15 }}>
-                <TouchableOpacity onPress={() => setShowOrderForm(false)}>
-                  <Text style={{ color: "#7f8c8d" }}>Cancel</Text>
-                </TouchableOpacity>
-                <AppButton onPress={submitRFIDOrder} text="Submit" />
-                {/* <TouchableOpacity onPress={submitRFIDOrder}>
-                  <Text style={{ color: "#1ABC9C", fontWeight: "bold" }}>Submit</Text>
-                </TouchableOpacity> */}
-              </View>
-            </View>
-          </View>
-        </Modal>
+        {/* <RFIDOrderModal
+          visible={showOrderForm}
+          onClose={() => setShowOrderForm(false)}
+          province={province}
+          setProvince={setProvince}
+          city={city}
+          setCity={setCity}
+          postalCode={postalCode}
+          setPostalCode={setPostalCode}
+          address={address}
+          setAddress={setAddress}
+          onSubmit={submitRFIDOrder}
+        /> */}
+        {/* RFID Modal */}
+        <RFIDOrderModal
+          visible={showOrderForm}
+          onClose={() => setShowOrderForm(false)}
+          onSubmit={handleModalSubmit}
+          initialAddress={selectedAddress}
+        />
       </View>
     </ScrollView>
   );
@@ -310,5 +364,4 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     textAlign: "center",
   },
-
 });

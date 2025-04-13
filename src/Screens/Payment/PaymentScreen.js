@@ -3,21 +3,31 @@ import { View, Text, StyleSheet } from "react-native";
 import Payment from "../../Components/Payment";
 
 const PaymentScreen = ({ route }) => {
-  const { amount, busId, userId, adminId, selectedSeats } = route.params;
+  const { amount, busId, userId, userName, email, adminId, selectedSeats } =
+    route.params;
+
   return (
     <View style={styles.container}>
       <View style={styles.cardContainer}>
         <View style={styles.card}>
           <Text style={styles.title}>Billing Details</Text>
-          <Text style={styles.detail}><Text style={styles.label}>Name:</Text> John Doe</Text>
-          <Text style={styles.detail}><Text style={styles.label}>Email:</Text> johndoe@example.com</Text>
-          <Text style={styles.detail}><Text style={styles.label}>Total Amount:</Text> $50.00</Text>
+          <Text style={styles.detail}>
+            <Text style={styles.label}>Name:</Text> {userName}
+          </Text>
+          <Text style={styles.detail}>
+            <Text style={styles.label}>Email:</Text> {email}
+          </Text>
+          <Text style={styles.detail}>
+            <Text style={styles.label}>Total Amount:</Text> Rs. {amount}
+          </Text>
         </View>
       </View>
-      <Payment style={styles.button}
+      <Payment
+        style={styles.button}
         amount={amount}
         busId={busId}
         userId={userId}
+        email={email}
         adminId={adminId}
         selectedSeats={selectedSeats}
       />

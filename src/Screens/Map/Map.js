@@ -18,20 +18,8 @@ const ActiveTicketsScreen = () => {
     const fetchActiveTickets = async () => {
         try {
             const token = await AsyncStorage.getItem('token');
-
-            if (!token) {
-                console.warn('Token not found!');
-                return;
-            }
-
             const decoded = jwtDecode(token);
-
             const userId = decoded?.sub;
-
-            if (!userId) {
-                console.warn('UserId not found in token!');
-                return;
-            }
             const { data } = await axios(`${apiBaseUrl}/ticket/user/${userId}`);
             // console.log("Fetched ticket data:", data);
             const today = new Date().toISOString().split("T")[0];  // Get today's date in YYYY-MM-DD format
@@ -66,7 +54,7 @@ const ActiveTicketsScreen = () => {
 
     return (
         <ScrollView style={styles.container}>
-            <Text style={styles.header}>Active Tickets</Text>
+            <Text style={styles.header}>Choose Your Route</Text>
 
             {activeTickets.length > 0 ? (
                 activeTickets.map((ticket, index) => (

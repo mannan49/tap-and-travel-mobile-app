@@ -1,10 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, Button } from "react-native";
-import {
-  useStripe,
-  initPaymentSheet,
-  presentPaymentSheet,
-} from "@stripe/stripe-react-native";
+import { useStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
 import Toast from "react-native-toast-message";
 import { apiBaseUrl, PAYMENT_INTENT } from "../config/urls";
@@ -12,9 +8,7 @@ import { useNavigation } from "@react-navigation/native";
 import apiClient from "../api/apiClient";
 import AppButton from "./Button";
 
-
-
-const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
+const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
   const navigation = useNavigation();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
@@ -34,7 +28,6 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
       });
 
       const { clientSecret, ephemeralKey, customer } = data;
-
 
       const { error } = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret,
@@ -65,11 +58,6 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
         text2: error.message,
       });
     } else {
-      Toast.show({
-        type: "success",
-        text1: "Payment Successful!",
-        text2: "Your transaction has been completed.",
-      });
       await handleTicketGeneration();
     }
   };
@@ -85,24 +73,24 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
     }
 
     try {
-      for (const seat of selectedSeats) {
-        // **1️⃣ Update Seat Status**
-        await apiClient.patch(`/bus/update-seat-status`, {
-          busId,
-          seatNumber: seat?.seatNumber,
+      const seatPayload = {
+        busId,
+        seatsData: selectedSeats.map((seat) => ({
+          seatNumber: seat.seatNumber,
           booked: true,
-          email: "mannannasir49@gmail.com",
+          email: email,
           gender: seat?.gender,
-        });
-
-        // **2️⃣ Generate Ticket**
-        await axios.post(`${apiBaseUrl}/ticket/generate`, {
-          userId,
-          busId,
-          seatNumber: seat?.seatNumber,
-          travelDate: new Date().toISOString(),
-        });
-      }
+        })),
+      };
+      await apiClient.patch(`/bus/update-seat-status`, seatPayload);
+      const ticketBody = {
+        tickets: selectedSeats.map((seat) => ({
+          userId: userId,
+          busId: busId,
+          seatNumber: seat.seatNumber,
+        })),
+      };
+      await axios.post(`${apiBaseUrl}/ticket/generate`, ticketBody);
 
       Toast.show({
         type: "success",

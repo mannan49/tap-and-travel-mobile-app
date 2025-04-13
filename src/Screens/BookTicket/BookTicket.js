@@ -11,6 +11,8 @@ import {
 import { apiBaseUrl } from "../../config/urls";
 import { useNavigation } from "@react-navigation/native";
 import AppButton from "../../Components/Button";
+import { jwtDecode } from "jwt-decode";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const BookTicket = ({ route }) => {
   const { busId } = route.params;
@@ -54,7 +56,15 @@ const BookTicket = ({ route }) => {
     }
   };
 
-  const handleGenderSelection = (gender) => {
+  const handleGenderSelection = async (gender) => {
+    const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        return;
+      }
+      const decoded = jwtDecode(token);
+      const userId = decoded?.sub;
+      const userName = decoded?.name;
+      const email = decoded?.email;
     const updatedSeats = selectedSeats.map((seat) => ({
       ...seat,
       gender: gender,
@@ -65,7 +75,9 @@ const BookTicket = ({ route }) => {
     const totalAmount = selectedSeats?.length * selectedBus?.fare.actualPrice;
     navigation.navigate("PaymentScreen", {
       busId,
-      userId: "67de83adfd817d7dc56a0a04",
+      userId: userId,
+      userName,
+      email,
       amount: totalAmount,
       adminId: selectedBus?.busDetails?.adminId,
       selectedSeats: selectedSeats,
