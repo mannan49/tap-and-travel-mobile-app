@@ -47,7 +47,7 @@ const TabRoutes = () => {
         component={Map}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="map" size={size} color={color} /> // Map icon
+            <MaterialIcons name="location-on" size={size} color={color} /> // Map icon
           ),
         }}
       />
