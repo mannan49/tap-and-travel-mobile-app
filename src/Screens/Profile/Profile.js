@@ -120,7 +120,7 @@ const Profile = () => {
       const token = await AsyncStorage.getItem("token");
       const { sub: userId } = jwtDecode(token);
 
-      await apiClient.post("/rfid/request", {
+      await apiClient.post("/rfid-card", {
         userId,
         province,
         city,
@@ -227,7 +227,7 @@ const Profile = () => {
                 <TouchableOpacity onPress={() => setShowOrderForm(false)}>
                   <Text style={{ color: "#7f8c8d" }}>Cancel</Text>
                 </TouchableOpacity>
-                <AppButton onPress={submitRFIDOrder} text="Submit"/>
+                <AppButton onPress={submitRFIDOrder} text="Submit" />
                 {/* <TouchableOpacity onPress={submitRFIDOrder}>
                   <Text style={{ color: "#1ABC9C", fontWeight: "bold" }}>Submit</Text>
                 </TouchableOpacity> */}
