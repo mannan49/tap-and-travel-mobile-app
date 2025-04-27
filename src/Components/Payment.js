@@ -108,12 +108,7 @@ const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
 
   return (
     <View>
-      <AppButton
-        text="Pay Now"
-        variant="green"
-        onPress={openPaymentSheet}
-        disabled={loading}
-      />
+      <AppButton text="Pay Now" onPress={openPaymentSheet} disabled={loading} />
     </View>
   );
 };

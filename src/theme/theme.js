@@ -7,7 +7,7 @@ const lightTheme = {
     secondary: "#5c5c99",
     tertiary: "#a3a3cc",
     basic: "#ccccff",
-    green: "#228B22",
+    green: "#00FF00",
   },
   spacing: {
     small: 8,
@@ -26,7 +26,7 @@ const darkTheme = {
     secondary: "#5c5c99",
     tertiary: "#a3a3cc",
     basic: "#ccccff",
-    green: "##228B22",
+    green: "#00FF00",
   },
   spacing: lightTheme.spacing,
   typography: lightTheme.typography,
