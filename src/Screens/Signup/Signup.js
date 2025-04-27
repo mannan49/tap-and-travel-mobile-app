@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AppInput from "../../Components/AppInput";
 import AppButton from "../../Components/Button";
 import apiClient from "../../api/apiClient";
@@ -77,53 +78,69 @@ const Signup = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+      <View style={styles.topSection}>
+        {/* Location Icon and App Title */}
+        <MaterialIcons
+          name="location-on"
+          size={60}
+          color="white"
+          style={{ marginBottom: 10 }}
+        />
+        <Text style={styles.appName}>Tap And Travel</Text>
+      </View>
 
-      <AppInput
-        label="Full Name"
-        placeholder="Enter your name"
-        onChangeText={(name) => updateState({ name })}
-      />
-      <AppInput
-        label="Email"
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        onChangeText={(email) => updateState({ email })}
-      />
-      <AppInput
-        label="Phone Number"
-        placeholder="Enter your phone number"
-        keyboardType="phone-pad"
-        onChangeText={(phoneNumber) => updateState({ phoneNumber })}
-      />
-      <AppInput
-        label="Password"
-        placeholder="Enter your password"
-        secureTextEntry={state.isSecure}
-        onChangeText={(password) => updateState({ password })}
-        rightIcon={state.isSecure ? "eye-off" : "eye"}
-        onRightIconPress={togglePasswordVisibility}
-      />
-      <AppInput
-        label="Confirm Password"
-        placeholder="Re-enter your password"
-        secureTextEntry={state.isSecureConfirm}
-        onChangeText={(confirmPassword) => updateState({ confirmPassword })}
-        rightIcon={state.isSecureConfirm ? "eye-off" : "eye"}
-        onRightIconPress={toggleConfirmPasswordVisibility}
-      />
+      <View style={styles.bottomSection}>
+        <Text style={styles.welcomeText}>Create Account</Text>
 
-      <AppButton
-        text="Sign Up"
-        onPress={onSignUp}
-        isLoading={state.isLoading}
-      />
+        <AppInput
+          placeholder="Full Name"
+          value={state.name}
+          onChangeText={(name) => updateState({ name })}
+        />
+        <AppInput
+          placeholder="Email"
+          value={state.email}
+          keyboardType="email-address"
+          onChangeText={(email) => updateState({ email })}
+        />
+        <AppInput
+          placeholder="Phone Number"
+          value={state.phoneNumber}
+          keyboardType="phone-pad"
+          onChangeText={(phoneNumber) => updateState({ phoneNumber })}
+        />
+        <AppInput
+          placeholder="Password"
+          secureTextEntry={state.isSecure}
+          value={state.password}
+          onChangeText={(password) => updateState({ password })}
+          rightIcon={state.isSecure ? "eye-off" : "eye"}
+          onRightIconPress={togglePasswordVisibility}
+        />
+        <AppInput
+          placeholder="Confirm Password"
+          secureTextEntry={state.isSecureConfirm}
+          value={state.confirmPassword}
+          onChangeText={(confirmPassword) => updateState({ confirmPassword })}
+          rightIcon={state.isSecureConfirm ? "eye-off" : "eye"}
+          onRightIconPress={toggleConfirmPasswordVisibility}
+        />
 
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.loginText}>
-          Already have an account? <Text style={styles.boldText}>Login</Text>
-        </Text>
-      </TouchableOpacity>
+        <View style={{ marginVertical: 6 }} />
+        <AppButton
+          text="Sign Up"
+          onPress={onSignUp}
+          isLoading={state.isLoading}
+          variant="primary"
+        />
+
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.loginText}>
+            Already have an account?{" "}
+            <Text style={styles.registerNow}>Login</Text>
+          </Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -131,24 +148,42 @@ const Signup = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    backgroundColor: "white",
-    justifyContent: "center",
+    backgroundColor: "#292966",
   },
-  title: {
+  topSection: {
+    flex: 1.2,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  appName: {
+    color: "white",
     fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
-    marginBottom: 20,
+  },
+  bottomSection: {
+    flex: 2,
+    backgroundColor: "white",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 24,
+    paddingTop: 30,
+  },
+  welcomeText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#292966",
+    marginBottom: 16,
   },
   loginText: {
     textAlign: "center",
-    marginTop: 15,
+    marignTop: 15,
+    marginBottom: 40,
     fontSize: 16,
+    color: "#999",
   },
-  boldText: {
+  registerNow: {
+    color: "red",
     fontWeight: "bold",
-    color: "blue",
   },
 });
 

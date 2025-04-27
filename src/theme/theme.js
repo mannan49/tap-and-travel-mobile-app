@@ -1,12 +1,13 @@
-import { createContext, useContext, useState } from 'react';
-import { useColorScheme } from 'react-native';
+import { createContext, useContext, useState } from "react";
+import { useColorScheme } from "react-native";
 
 const lightTheme = {
   colors: {
-    primary: '#292966',
-    secondary: '#5c5c99',
-    tertiary: '#a3a3cc',
-    basic: '#ccccff',
+    primary: "#292966",
+    secondary: "#5c5c99",
+    tertiary: "#a3a3cc",
+    basic: "#ccccff",
+    green: "#228B22",
   },
   spacing: {
     small: 8,
@@ -14,17 +15,18 @@ const lightTheme = {
     large: 24,
   },
   typography: {
-    header: { fontSize: 24, fontWeight: 'bold' },
-    body: { fontSize: 16, fontWeight: 'normal' },
+    header: { fontSize: 24, fontWeight: "bold" },
+    body: { fontSize: 16, fontWeight: "normal" },
   },
 };
 
 const darkTheme = {
   colors: {
-    primary: '#292966',
-    secondary: '#5c5c99',
-    tertiary: '#a3a3cc',
-    basic: '#ccccff',
+    primary: "#292966",
+    secondary: "#5c5c99",
+    tertiary: "#a3a3cc",
+    basic: "#ccccff",
+    green: "##228B22",
   },
   spacing: lightTheme.spacing,
   typography: lightTheme.typography,

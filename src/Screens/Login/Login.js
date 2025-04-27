@@ -1,5 +1,6 @@
 import React, { useContext, useState } from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import validator from "../../utils/validation";
 import { showError } from "../../utils/helperFunction";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -75,32 +76,47 @@ const Login = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
-      <AppInput
-        placeholder="Enter your email"
-        value={email}
-        onChangeText={(email) => updateState({ email })}
-      />
-      <AppInput
-        placeholder="Enter your password"
-        value={password}
-        secureTextEntry={isSecure}
-        onChangeText={(password) => updateState({ password })}
-      />
+      <View style={styles.topSection}>
+        {/* Location Icon */}
+        <MaterialIcons
+          name="location-on"
+          size={60}
+          color="white"
+          style={{ marginBottom: 10 }}
+        />
+        {/* Title */}
+        <Text style={styles.appName}>Tap And Travel</Text>
+      </View>
 
-      <View style={{ marginVertical: 8 }} />
-      <AppButton
-        text="Login"
-        onPress={onLogin}
-        variant="secondary"
-        isLoading={isLoading}
-      />
-      <View style={{ marginVertical: 8 }} />
-      <AppButton
-        text="Sign Up"
-        onPress={() => navigation.navigate("Signup")}
-        variant="secondary"
-      />
+      <View style={styles.bottomSection}>
+        <Text style={styles.welcomeText}>Welcome</Text>
+        <View style={styles.registerRow}>
+          <Text style={styles.registerText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
+            <Text style={styles.registerNow}>Register now</Text>
+          </TouchableOpacity>
+        </View>
+
+        <AppInput
+          placeholder="Enter your email"
+          value={email}
+          onChangeText={(email) => updateState({ email })}
+        />
+        <AppInput
+          placeholder="Enter your password"
+          value={password}
+          secureTextEntry={isSecure}
+          onChangeText={(password) => updateState({ password })}
+        />
+
+        <View style={{ marginVertical: 12 }} />
+        <AppButton
+          text="Login"
+          onPress={onLogin}
+          variant="primary"
+          isLoading={isLoading}
+        />
+      </View>
     </View>
   );
 };
@@ -108,15 +124,42 @@ const Login = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    backgroundColor: "white",
-    justifyContent: "center", // Align vertically (Y-axis)]
+    backgroundColor: "#292966", // Updated dark background
   },
-  title: {
+  topSection: {
+    flex: 1.2,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  appName: {
+    color: "white",
     fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
+  },
+  bottomSection: {
+    flex: 2,
+    backgroundColor: "white",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 24,
+    paddingTop: 30,
+  },
+  welcomeText: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#292966",
+    marginBottom: 8,
+  },
+  registerRow: {
+    flexDirection: "row",
     marginBottom: 20,
+  },
+  registerText: {
+    color: "#999",
+  },
+  registerNow: {
+    color: "red",
+    fontWeight: "bold",
   },
 });
 

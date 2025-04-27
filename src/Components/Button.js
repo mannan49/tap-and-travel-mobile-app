@@ -1,21 +1,26 @@
 import React from "react";
 import { useTheme } from "../theme/theme";
-import { TouchableOpacity, Text, StyleSheet, ActivityIndicator } from "react-native";
-const AppButton = ({ 
-  text, 
-  onPress, 
-  isLoading = false, 
+import {
+  TouchableOpacity,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+const AppButton = ({
+  text,
+  onPress,
+  isLoading = false,
   variant = "primary",
-  style 
+  style,
 }) => {
-  const { theme } = useTheme(); 
+  const { theme } = useTheme();
   const buttonColor = theme.colors[variant] || theme.colors.primary;
 
   return (
     <TouchableOpacity
       onPress={onPress}
       style={[styles.button, { backgroundColor: buttonColor }, style]}
-      disabled={isLoading} 
+      disabled={isLoading}
     >
       {isLoading ? (
         <ActivityIndicator size="small" color="white" />
@@ -28,11 +33,11 @@ const AppButton = ({
 
 const styles = StyleSheet.create({
   button: {
-    height: 48,
+    height: 40,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 10,
-    paddingHorizontal: 16,
+    borderRadius: 20,
+    paddingHorizontal: 20,
   },
   text: {
     fontSize: 16,
