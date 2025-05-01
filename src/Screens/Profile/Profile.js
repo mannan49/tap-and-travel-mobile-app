@@ -19,6 +19,7 @@ import RFIDOrderModal from "./RFIDOrderModal";
 
 const Profile = () => {
   const [name, setName] = useState("");
+  const [user, setUser] = useState(null);
   const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [oldPassword, setOldPassword] = useState("");
@@ -50,9 +51,10 @@ const Profile = () => {
 
       const { data } = await apiClient.get(`/user/${userId}`);
       if (data && data.user) {
-        setName(data.user.name);
-        setPhoneNumber(data.user.phoneNumber);
-        setEmail(data.user.email);
+        setUser(data?.user);
+        setName(data?.user?.name);
+        setPhoneNumber(data?.user?.phoneNumber);
+        setEmail(data?.user?.email);
       }
     } catch (error) {
       console.error(error);
@@ -138,6 +140,8 @@ const Profile = () => {
       });
       setShowOrderForm(false);
 
+      const updatedUser = { ...user, RFIDCardStatus: "booked" };
+      setUser(updatedUser);
       // Clear form
       setSelectedAddress(null);
     } catch (error) {
@@ -258,11 +262,19 @@ const Profile = () => {
 
         <View style={styles.divider} />
 
-        <AppButton
-          text="Order RFID Card"
-          variant="secondary"
-          onPress={() => setShowOrderForm(true)}
-        />
+        {user?.RFIDCardStatus === "pending" && (
+          <AppButton
+            text="Order RFID Card"
+            variant="secondary"
+            onPress={() => setShowOrderForm(true)}
+          />
+        )}
+        {user?.RFIDCardStatus !== "pending" && (
+          <AppButton
+            text={`RFID Card Status : ${user?.RFIDCardStatus}`}
+            variant="green"
+          />
+        )}
 
         <View style={styles.divider} />
 

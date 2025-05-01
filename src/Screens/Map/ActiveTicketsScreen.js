@@ -23,6 +23,7 @@ const ActiveTicketsScreen = () => {
       const decoded = jwtDecode(token);
       const userId = decoded?.sub;
       const { data } = await apiClient(`/ticket/user/information/${userId}`);
+      console.log("DAta", data);
       const today = new Date().toISOString().split("T")[0];
       const filtered = data.filter((ticket) => {
         const ticketTravelDate = ticket?.date;
@@ -42,9 +43,7 @@ const ActiveTicketsScreen = () => {
 
       setActiveTickets(filtered);
       console.log("Active tickets:", filtered);
-    } catch (error) {
-      console.error("Error fetching tickets:", error);
-    }
+    } catch (error) {}
   };
 
   const processedTickets = activeTickets.map((ticket) => {

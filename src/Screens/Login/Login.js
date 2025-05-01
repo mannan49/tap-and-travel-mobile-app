@@ -9,6 +9,7 @@ import { AuthContext } from "../../context/AuthContext";
 import Toast from "react-native-toast-message";
 import AppButton from "../../Components/Button";
 import AppInput from "../../Components/AppInput";
+import { registerExpoPushToken } from "../../utils/notificationHelper";
 
 export const loginUser = async (userData) => {
   try {
@@ -22,6 +23,7 @@ export const loginUser = async (userData) => {
 
     if (response.ok && data.token) {
       await AsyncStorage.setItem("token", data.token);
+      await registerExpoPushToken(data?.userId);
       return { success: true, data };
     } else {
       return { success: false, message: data.message || "Login failed" };
@@ -63,7 +65,7 @@ const Login = ({ navigation }) => {
     const response = await loginUser({ email, password });
 
     if (response.success) {
-      await login(response.data.token);
+      await login(response?.data?.token);
     } else {
       Toast.show({
         type: "error",
@@ -108,6 +110,10 @@ const Login = ({ navigation }) => {
           secureTextEntry={isSecure}
           onChangeText={(password) => updateState({ password })}
         />
+
+        <TouchableOpacity onPress={() => navigation.navigate("ForgotEmail")}>
+          <Text style={styles.registerNow}>Forgot Password?</Text>
+        </TouchableOpacity>
 
         <View style={{ marginVertical: 12 }} />
         <AppButton

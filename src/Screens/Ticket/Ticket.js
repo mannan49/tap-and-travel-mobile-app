@@ -30,7 +30,6 @@ const Ticket = () => {
       setTickets(data);
       filterTickets(data, selectedTab);
     } catch (error) {
-      console.error("Error fetching tickets:", error);
     } finally {
       setLoading(false);
     }
