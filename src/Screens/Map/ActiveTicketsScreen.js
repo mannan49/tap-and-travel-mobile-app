@@ -7,6 +7,7 @@ import { apiBaseUrl } from "../../config/urls";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { jwtDecode } from "jwt-decode";
 import apiClient from "../../api/apiClient";
+import * as Location from "expo-location";
 import { formatDate } from "../../utils/helperFunction";
 
 const ActiveTicketsScreen = () => {
@@ -66,9 +67,38 @@ const ActiveTicketsScreen = () => {
     return { ...ticket, shouldShowNavigationButton };
   });
 
-  const handleChoose = (ticket) => {
-    const busId = ticket?.busId;
-    navigation.navigate("TrackLocation", { busId });
+  const handleChoose = async (ticket) => {
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        alert("Location permission is required.");
+        return;
+      }
+
+      const location = await Location.getCurrentPositionAsync({});
+      const currentLocation = {
+        lat: location.coords.latitude,
+        lng: location.coords.longitude,
+      };
+
+      const payload = {
+        userId: ticket?.userId,
+        busId: ticket?.busId,
+        currentLocation,
+        route: {
+          ...ticket?.route,
+          stops: ticket?.route?.stops?.map((stop) => ({ ...stop })),
+        },
+      };
+
+      await apiClient.post("/ticket/schedule-notifications", payload);
+
+      navigation.navigate("TrackLocation", { busId: ticket?.busId });
+    } catch (error) {
+      console.error("Error scheduling notifications:", error);
+      navigation.navigate("TrackLocation", { busId: ticket?.busId });
+      alert("Failed to schedule notifications. Please try again.");
+    }
   };
 
   return (
@@ -88,13 +118,18 @@ const ActiveTicketsScreen = () => {
             )}
             <Text style={styles.date}>Date: {formatDate(ticket?.date)}</Text>
             <Text style={styles.bus}>Bus: {ticket?.busDetails?.busNumber}</Text>
-            {ticket.shouldShowNavigationButton && (
+            {/* {ticket.shouldShowNavigationButton && (
               <AppButton
                 text="Start Navigation"
                 onPress={() => handleChoose(ticket)}
                 variant="primary"
               />
-            )}
+            )} */}
+            <AppButton
+              text="Start Navigation"
+              onPress={() => handleChoose(ticket)}
+              variant="primary"
+            />
           </View>
         ))
       ) : (

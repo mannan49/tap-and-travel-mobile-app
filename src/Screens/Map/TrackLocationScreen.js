@@ -1,88 +1,222 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+  Linking,
+  Button,
+} from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
-import axios from "axios";
 import apiClient from "../../api/apiClient";
+import polyline from "@mapbox/polyline";
+
+const GOOGLE_MAPS_API_KEY = "AIzaSyA6V89_30qIOKJEV948T6-a_aPLaBRfiLs";
 
 const TrackLocationScreen = ({ route }) => {
   const { busId } = route.params;
+  const [busData, setBusData] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
-  const [driverLocation, setDriverLocation] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [routeCoords, setRouteCoords] = useState([]);
+  const [distance, setDistance] = useState(null);
+  const [duration, setDuration] = useState(null);
 
   useEffect(() => {
-    getUserLocation();
-    fetchDriverLocation();
-
-    const interval = setInterval(fetchDriverLocation, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
+    const initialize = async () => {
+      try {
+        await getLocation();
+        await fetchBusData();
+      } catch (err) {
+        console.error("Init error:", err);
+        Alert.alert("Error", "Something went wrong while initializing.");
+      }
+    };
+    initialize();
   }, []);
 
-  const getUserLocation = async () => {
-    let { status } = await Location.requestForegroundPermissionsAsync();
+  const getLocation = async () => {
+    const { status } = await Location.requestForegroundPermissionsAsync();
     if (status !== "granted") {
-      alert("Permission to access location was denied");
+      Alert.alert("Permission denied", "Location access is required.");
       return;
     }
 
-    let location = await Location.getCurrentPositionAsync({});
+    const loc = await Location.getCurrentPositionAsync({});
     setUserLocation({
-      latitude: location.coords.latitude,
-      longitude: location.coords.longitude,
+      latitude: loc.coords.latitude,
+      longitude: loc.coords.longitude,
+      latitudeDelta: 0.1,
+      longitudeDelta: 0.1,
     });
   };
 
-  const fetchDriverLocation = async () => {
+  const fetchBusData = async () => {
+    const res = await apiClient.post("/bus/bus-advance-search", { _id: busId });
+    const data = res.data.data[0];
+    setBusData(data);
+    const stops = data.route?.stops || [];
+
+    if (stops.length >= 2) {
+      await fetchRouteFromGoogleAPI(stops);
+    } else {
+      Alert.alert("Insufficient Stops", "Route must have at least two stops.");
+    }
+
+    setLoading(false);
+  };
+
+  const fetchRouteFromGoogleAPI = async (stops) => {
+    const origin = `${stops[0].geometry.location.lat},${stops[0].geometry.location.lng}`;
+    const destination = `${stops[stops.length - 1].geometry.location.lat},${
+      stops[stops.length - 1].geometry.location.lng
+    }`;
+    const waypoints = stops
+      .slice(1, -1)
+      .map(
+        (stop) => `${stop.geometry.location.lat},${stop.geometry.location.lng}`
+      )
+      .join("|");
+
+    let url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${GOOGLE_MAPS_API_KEY}&mode=driving`;
+    if (waypoints) url += `&waypoints=${waypoints}`;
+
     try {
-      const { data } = await apiClient.post(`/location/fetch`, {
-        busId: busId,
-      });
-      const { driverLatitude, driverLongitude } = data?.data;
-      console.log("Locaiton Api res", data);
-      setDriverLocation({
-        latitude: driverLatitude,
-        longitude: driverLongitude,
-      });
-    } catch (error) {
-      console.error("Error fetching driver location:", error);
+      const response = await fetch(url);
+      const json = await response.json();
+
+      if (json.routes.length) {
+        const points = polyline.decode(json.routes[0].overview_polyline.points);
+        const routeCoordinates = points.map(([lat, lng]) => ({
+          latitude: lat,
+          longitude: lng,
+        }));
+
+        setRouteCoords(routeCoordinates);
+        const leg = json.routes[0].legs;
+        const totalDistance = leg.reduce(
+          (acc, curr) => acc + curr.distance.value,
+          0
+        );
+        const totalDuration = leg.reduce(
+          (acc, curr) => acc + curr.duration.value,
+          0
+        );
+        setDistance((totalDistance / 1000).toFixed(2) + " km");
+        setDuration(Math.ceil(totalDuration / 60) + " mins");
+      } else {
+        Alert.alert("Routing Error", "No route found.");
+      }
+    } catch (err) {
+      console.error("Directions API Error:", err);
+      Alert.alert("Error", "Failed to fetch route.");
     }
   };
 
-  if (!userLocation || !driverLocation) {
-    return <ActivityIndicator size="large" style={styles.loader} />;
+  const handleStartNavigation = () => {
+    if (!busData?.route?.stops?.length) return;
+
+    const stops = busData.route.stops;
+    const origin = `${stops[0].geometry.location.lat},${stops[0].geometry.location.lng}`;
+    const destination = `${stops[stops.length - 1].geometry.location.lat},${
+      stops[stops.length - 1].geometry.location.lng
+    }`;
+    const waypoints = stops
+      .slice(1, -1)
+      .map(
+        (stop) => `${stop.geometry.location.lat},${stop.geometry.location.lng}`
+      )
+      .join("|");
+
+    let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
+    if (waypoints) url += `&waypoints=${waypoints}`;
+
+    Linking.openURL(url).catch((err) =>
+      Alert.alert("Error", "Failed to open Google Maps.")
+    );
+  };
+
+  if (loading || !userLocation) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" />
+        <Text>Loading map...</Text>
+      </View>
+    );
   }
 
   return (
-    <MapView
-      style={styles.map}
-      initialRegion={{
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      }}
-    >
-      <Marker coordinate={userLocation} title="You" pinColor="blue" />
-      <Marker coordinate={driverLocation} title="Bus" pinColor="green" />
+    <View style={styles.container}>
+      <MapView style={styles.map} region={userLocation}>
+        <Marker coordinate={userLocation} title="You" pinColor="blue" />
 
-      <Polyline
-        coordinates={[userLocation, driverLocation]}
-        strokeColor="#000"
-        strokeWidth={2}
-      />
-    </MapView>
+        {busData?.route?.stops?.map((stop, index) => (
+          <Marker
+            key={index}
+            coordinate={{
+              latitude: stop.geometry.location.lat,
+              longitude: stop.geometry.location.lng,
+            }}
+            title={`Stop ${index + 1}`}
+            pinColor={
+              index === 0
+                ? "green"
+                : index === busData.route.stops.length - 1
+                ? "red"
+                : "orange"
+            }
+          />
+        ))}
+
+        {routeCoords.length > 0 && (
+          <Polyline
+            coordinates={routeCoords}
+            strokeColor="blue"
+            strokeWidth={4}
+          />
+        )}
+      </MapView>
+
+      <View style={styles.infoBox}>
+        {distance && duration && (
+          <>
+            <Text>Distance: {distance}</Text>
+            <Text>Estimated Time: {duration}</Text>
+          </>
+        )}
+        <Button title="Start Navigation" onPress={handleStartNavigation} />
+      </View>
+    </View>
   );
 };
 
+export default TrackLocationScreen;
+
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   map: {
     flex: 1,
   },
-  loader: {
+  loaderContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
+  infoBox: {
+    position: "absolute",
+    bottom: 20,
+    left: 20,
+    right: 20,
+    padding: 10,
+    backgroundColor: "white",
+    borderRadius: 10,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+  },
 });
-
-export default TrackLocationScreen;
