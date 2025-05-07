@@ -16,6 +16,7 @@ import Toast from "react-native-toast-message";
 import AppInput from "../../Components/AppInput";
 import AppButton from "../../Components/Button";
 import RFIDOrderModal from "./RFIDOrderModal";
+import Loader from "../../Components/Loader";
 
 const Profile = () => {
   const [name, setName] = useState("");
@@ -189,13 +190,13 @@ const Profile = () => {
     setLoading(false);
   };
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#1ABC9C" />
-      </View>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <View style={styles.loadingContainer}>
+  //       <Loader />
+  //     </View>
+  //   );
+  // }
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -271,7 +272,7 @@ const Profile = () => {
         )}
         {user?.RFIDCardStatus !== "pending" && (
           <AppButton
-            text={`RFID Card Status : ${user?.RFIDCardStatus}`}
+            text={`RFID Status : ${user?.RFIDCardStatus}`}
             variant="green"
           />
         )}

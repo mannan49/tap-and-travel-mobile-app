@@ -34,7 +34,7 @@ const BookingForm = () => {
   const fetchBuses = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${apiBaseUrl}/bus`);
+      const response = await axios.get(`${apiBaseUrl}/bus/future`);
       const today = new Date().toISOString().split("T")[0];
       const filteredData = response.data.filter((bus) => {
         const busDate = new Date(bus.date).toISOString().split("T")[0];
@@ -108,7 +108,7 @@ const BookingForm = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Bus Booking Form</Text>
+      <Text style={styles.title}>Book Your Bus</Text>
 
       <AppSelect
         selectedValue={formData.fromCity}
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     color: "#2C3E50",
-    marginBottom: 24,
+    marginTop: 12,
   },
   results: {
     marginTop: 16,

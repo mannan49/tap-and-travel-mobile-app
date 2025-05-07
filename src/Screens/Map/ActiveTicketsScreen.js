@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { Image, View, Text, StyleSheet, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import AppButton from "../../Components/Button";
@@ -9,42 +9,34 @@ import { jwtDecode } from "jwt-decode";
 import apiClient from "../../api/apiClient";
 import * as Location from "expo-location";
 import { formatDate } from "../../utils/helperFunction";
+import { busStatuses } from "../../utils/bus-statuses";
+import Loader from "../../Components/Loader";
 
 const ActiveTicketsScreen = () => {
   const navigation = useNavigation();
   const [activeTickets, setActiveTickets] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchActiveTickets();
   }, []);
 
   const fetchActiveTickets = async () => {
+    setLoading(true);
     try {
       const token = await AsyncStorage.getItem("token");
       const decoded = jwtDecode(token);
       const userId = decoded?.sub;
-      const { data } = await apiClient(`/ticket/user/information/${userId}`);
-      console.log("DAta", data);
-      const today = new Date().toISOString().split("T")[0];
-      const filtered = data.filter((ticket) => {
-        const ticketTravelDate = ticket?.date;
+      const { data } = await apiClient(
+        `/ticket/user/information/${userId}?checkUptoEndDate=true`
+      );
 
-        if (!ticketTravelDate) {
-          console.warn("Ticket has no travelDate:", ticket);
-          return false;
-        }
-
-        const ticketDate = new Date(ticketTravelDate);
-        if (isNaN(ticketDate.getTime())) return false;
-
-        const formattedDate = ticketDate.toISOString().split("T")[0];
-
-        return formattedDate >= today;
-      });
-
-      setActiveTickets(filtered);
-      console.log("Active tickets:", filtered);
-    } catch (error) {}
+      setActiveTickets(data?.active);
+    } catch (error) {
+      console.error("Failed to fetch tickets:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const processedTickets = activeTickets.map((ticket) => {
@@ -53,15 +45,12 @@ const ActiveTicketsScreen = () => {
     const isToday = ticketDate.toDateString() === today.toDateString();
 
     let shouldShowNavigationButton = false;
-    if (isToday) {
-      const departure = new Date(`${ticket?.date}T${ticket?.departureTime}`);
-      const arrival = new Date(`${ticket?.date}T${ticket?.arrivalTime}`);
-      const beforeDeparture = new Date(departure.getTime() - 30 * 60000); // 30 min before departure
-      const afterArrival = new Date(arrival.getTime() + 15 * 60000); // 15 min after arrival
-
-      if (today >= beforeDeparture && today <= afterArrival) {
-        shouldShowNavigationButton = true;
-      }
+    if (
+      isToday &&
+      ticket?.ticketStatus === "scanned" &&
+      ticket?.busStatus === busStatuses.IN_TRANSIT
+    ) {
+      shouldShowNavigationButton = true;
     }
 
     return { ...ticket, shouldShowNavigationButton };
@@ -105,10 +94,11 @@ const ActiveTicketsScreen = () => {
     <ScrollView style={styles.container}>
       <Text style={styles.header}>Choose Your Route</Text>
 
-      {processedTickets.length > 0 ? (
+      {loading ? (
+        <Loader />
+      ) : processedTickets.length > 0 ? (
         processedTickets.map((ticket, index) => (
           <View key={index} style={styles.card}>
-            {/* Check if ticket.route exists before accessing its properties */}
             {ticket.route ? (
               <Text style={styles.route}>
                 {ticket?.route?.startCity} → {ticket?.route?.endCity}
@@ -118,18 +108,27 @@ const ActiveTicketsScreen = () => {
             )}
             <Text style={styles.date}>Date: {formatDate(ticket?.date)}</Text>
             <Text style={styles.bus}>Bus: {ticket?.busDetails?.busNumber}</Text>
-            {/* {ticket.shouldShowNavigationButton && (
+            <View style={styles.imageContainer}>
+              <Image
+                source={{
+                  uri: "https://t4.ftcdn.net/jpg/02/69/47/51/360_F_269475198_k41qahrZ1j4RK1sarncMiFHpcmE2qllQ.jpg",
+                }}
+                style={styles.busImage}
+                resizeMode="cover"
+              />
+            </View>
+            {ticket.shouldShowNavigationButton && (
               <AppButton
                 text="Start Navigation"
                 onPress={() => handleChoose(ticket)}
                 variant="primary"
               />
-            )} */}
-            <AppButton
+            )}
+            {/* <AppButton
               text="Start Navigation"
               onPress={() => handleChoose(ticket)}
               variant="primary"
-            />
+            /> */}
           </View>
         ))
       ) : (
@@ -144,10 +143,27 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "#FFFFFF",
   },
+  imageContainer: {
+    flex: 3,
+    marginRight: 12,
+    borderRadius: 8,
+    overflow: "hidden",
+    backgroundColor: "#ddd",
+    marginBottom: 12,
+  },
+
+  busImage: {
+    width: "100%",
+    height: "100%",
+    aspectRatio: 1.5,
+    borderRadius: 8,
+  },
+
   header: {
     fontSize: 22,
     fontWeight: "bold",
-    marginVertical: 16,
+    marginBottom: 16,
+    marginTop: 32,
     textAlign: "center",
   },
   card: {

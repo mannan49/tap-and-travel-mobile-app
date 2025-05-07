@@ -12,6 +12,7 @@ const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
   const navigation = useNavigation();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
+  const [paymentId, setPaymentId] = useState(null);
 
   useEffect(() => {
     initializePaymentSheet();
@@ -27,12 +28,13 @@ const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
         adminId,
       });
 
-      const { clientSecret, ephemeralKey, customer } = data;
+      const { clientSecret, paymentId } = data;
+
+      console.log("Payment Intent API response", data);
+      setPaymentId(paymentId);
 
       const { error } = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret,
-        customerId: customer,
-        customerEphemeralKeySecret: ephemeralKey,
         merchantDisplayName: "Tap & Travel",
       });
 
@@ -58,6 +60,10 @@ const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
         text2: error.message,
       });
     } else {
+      await apiClient.post(`${apiBaseUrl}/payment/update-status`, {
+        paymentId,
+        status: "succeeded",
+      });
       await handleTicketGeneration();
     }
   };

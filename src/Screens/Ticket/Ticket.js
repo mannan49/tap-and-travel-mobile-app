@@ -13,7 +13,7 @@ import AppButton from "../../Components/Button";
 import TicketCard from "./TicketCard";
 
 const Ticket = () => {
-  const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState(null);
   const [filteredTickets, setFilteredTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTab, setSelectedTab] = useState("active");
@@ -47,8 +47,8 @@ const Ticket = () => {
     const today = new Date();
     const filtered =
       tab === "active"
-        ? ticketsList.filter((ticket) => new Date(ticket?.date) >= today)
-        : ticketsList.filter((ticket) => new Date(ticket?.date) < today);
+        ? ticketsList?.active
+        : ticketsList?.past
 
     setFilteredTickets(filtered);
   };
