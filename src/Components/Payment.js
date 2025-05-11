@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button } from "react-native";
+import { View } from "react-native";
 import { useStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
 import Toast from "react-native-toast-message";
-import { apiBaseUrl, PAYMENT_INTENT } from "../config/urls";
+import { apiBaseUrl } from "../config/urls";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../api/apiClient";
 import AppButton from "./Button";
 
-const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
+const Payment = ({ amount, adminId, userId, email, busId, selectedSeats, onSuccess }) => {
   const navigation = useNavigation();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
@@ -29,8 +29,6 @@ const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
       });
 
       const { clientSecret, paymentId } = data;
-
-      console.log("Payment Intent API response", data);
       setPaymentId(paymentId);
 
       const { error } = await initPaymentSheet({
@@ -38,16 +36,14 @@ const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
         merchantDisplayName: "Tap & Travel",
       });
 
-      if (!error) {
-        setLoading(false);
-      }
+      if (!error) setLoading(false);
     } catch (err) {
       Toast.show({
         type: "error",
         text1: "Unable to initialize payment.",
       });
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const openPaymentSheet = async () => {
@@ -89,6 +85,7 @@ const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
         })),
       };
       await apiClient.patch(`/bus/update-seat-status`, seatPayload);
+
       const ticketBody = {
         tickets: selectedSeats.map((seat) => ({
           userId: userId,
@@ -102,6 +99,10 @@ const Payment = ({ amount, adminId, userId, email, busId, selectedSeats }) => {
         type: "success",
         text2: "Your ticket has been successfully generated.",
       });
+
+      // 🎉 Trigger confetti from parent
+      if (onSuccess) onSuccess();
+
       navigation.navigate("MainTabs", { screen: "Ticket" });
     } catch (error) {
       console.error("Error generating tickets:", error);

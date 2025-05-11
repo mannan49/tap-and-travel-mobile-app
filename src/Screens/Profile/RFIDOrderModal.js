@@ -5,6 +5,7 @@ import AppSelect from "../../Components/AppSelect";
 import AppInput from "../../Components/AppInput";
 import { pakistanCities } from "../../utils/pakistanCities";
 import AppButton from "../../Components/Button";
+import * as Animatable from "react-native-animatable";
 
 const RFIDOrderModal = ({ visible, onClose, onSubmit, initialAddress }) => {
   const [formData, setFormData] = useState({
@@ -57,10 +58,10 @@ const RFIDOrderModal = ({ visible, onClose, onSubmit, initialAddress }) => {
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide">
+    <Modal visible={visible} transparent animationType="fade">
       <View style={styles.overlay}>
-        <View style={styles.modal}>
-          <Text style={styles.title}>Enter Your Address</Text>
+        <Animatable.View animation="fadeInUp" duration={400} style={styles.modal}>
+          <Text style={styles.title}>📍 Shipping Address</Text>
 
           <AppSelect
             items={provinces.map((province) => ({
@@ -69,6 +70,7 @@ const RFIDOrderModal = ({ visible, onClose, onSubmit, initialAddress }) => {
             }))}
             placeholder="Select Province"
             onValueChange={handleProvinceChange}
+            value={formData.province}
             variant="secondary"
           />
 
@@ -79,6 +81,7 @@ const RFIDOrderModal = ({ visible, onClose, onSubmit, initialAddress }) => {
             }))}
             placeholder="Select City"
             onValueChange={(value) => handleChange("city", value)}
+            value={formData.city}
             variant="secondary"
           />
 
@@ -111,7 +114,7 @@ const RFIDOrderModal = ({ visible, onClose, onSubmit, initialAddress }) => {
               style={styles.buttonSpacing}
             />
           </View>
-        </View>
+        </Animatable.View>
       </View>
     </Modal>
   );
@@ -122,29 +125,37 @@ export default RFIDOrderModal;
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: "#00000099",
+    backgroundColor: "#00000088",
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 16,
   },
   modal: {
-    backgroundColor: "#fff",
-    padding: 20,
-    width: "90%",
-    borderRadius: 12,
+    backgroundColor: "#ffffff",
+    borderRadius: 16,
+    padding: 24,
+    width: "100%",
+    maxWidth: 400,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 6,
   },
   title: {
     fontSize: 20,
     fontWeight: "bold",
+    color: "#2C3E50",
     textAlign: "center",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   buttonRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 20,
+    marginTop: 24,
   },
   buttonSpacing: {
     flex: 1,
-    marginHorizontal: 5,
+    marginHorizontal: 6,
   },
 });

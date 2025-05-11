@@ -5,7 +5,12 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Animatable from "react-native-animatable";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AppButton from "../../Components/Button";
 import Toast from "react-native-toast-message";
@@ -26,11 +31,9 @@ const ForgotOtp = ({ navigation, route }) => {
 
   const handleChange = (value, index) => {
     if (!/^\d*$/.test(value)) return;
-
     const updatedOtp = [...otp];
     updatedOtp[index] = value;
     setOtp(updatedOtp);
-
     if (value && index < 5) {
       inputRefs.current[index + 1].focus();
     }
@@ -49,17 +52,12 @@ const ForgotOtp = ({ navigation, route }) => {
 
   const handleVerifyOtp = async () => {
     const code = otp.join("");
-
     if (code.length !== 6) {
-      Toast.show({
-        type: "error",
-        text1: "Please enter a 6-digit OTP",
-      });
+      Toast.show({ type: "error", text1: "Please enter a 6-digit OTP" });
       return;
     }
 
     setIsLoading(true);
-
     try {
       const response = await apiClient.post(
         "/user/forgot-password/verify-otp",
@@ -69,11 +67,7 @@ const ForgotOtp = ({ navigation, route }) => {
         }
       );
 
-      Toast.show({
-        type: "success",
-        text1: response?.data?.message,
-      });
-
+      Toast.show({ type: "success", text1: response?.data?.message });
       navigation.navigate("ResetPassword", {
         email,
         secret_key: response?.data?.secret_key,
@@ -84,52 +78,66 @@ const ForgotOtp = ({ navigation, route }) => {
         text1: error?.response?.data?.message || "OTP verification failed",
       });
     }
-
     setIsLoading(false);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topSection}>
-        <MaterialIcons name="location-on" size={60} color="white" />
-        <Text style={styles.appName}>Tap And Travel</Text>
-      </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <LinearGradient
+          colors={["#4c669f", "#3b5998", "#192f6a"]}
+          style={styles.topSection}
+        >
+          <Animatable.View animation="fadeInDown" duration={800}>
+            <MaterialIcons name="location-on" size={64} color="white" />
+            <Text style={styles.appName}>Tap And Travel</Text>
+          </Animatable.View>
+        </LinearGradient>
 
-      <View style={styles.bottomSection}>
-        <Text style={styles.title}>Enter the OTP sent to {email}</Text>
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={200}
+          style={styles.bottomSection}
+        >
+          <Text style={styles.title}>Enter the OTP sent to {email}</Text>
 
-        <View style={styles.otpContainer}>
-          {otp.map((digit, index) => (
-            <TextInput
-              key={index}
-              ref={(ref) => (inputRefs.current[index] = ref)}
-              style={styles.otpBox}
-              keyboardType="numeric"
-              maxLength={1}
-              value={digit}
-              onChangeText={(value) => handleChange(value, index)}
-              onKeyPress={({ nativeEvent }) =>
-                handleKeyPress(nativeEvent, index)
-              }
-            />
-          ))}
-        </View>
+          <View style={styles.otpContainer}>
+            {otp.map((digit, index) => (
+              <TextInput
+                key={index}
+                ref={(ref) => (inputRefs.current[index] = ref)}
+                style={styles.otpBox}
+                keyboardType="numeric"
+                maxLength={1}
+                value={digit}
+                onChangeText={(value) => handleChange(value, index)}
+                onKeyPress={({ nativeEvent }) =>
+                  handleKeyPress(nativeEvent, index)
+                }
+              />
+            ))}
+          </View>
 
-        <AppButton
-          text="Verify OTP"
-          onPress={handleVerifyOtp}
-          isLoading={isLoading}
-          variant="primary"
-        />
+          <AppButton
+            text="Verify OTP"
+            onPress={handleVerifyOtp}
+            isLoading={isLoading}
+            variant="primary"
+          />
 
-        <View style={styles.loginLinkContainer}>
-          <Text style={styles.loginText}>Remember your password? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.loginLink}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+          <View style={styles.loginLinkContainer}>
+            <Text style={styles.loginText}>Remember your password? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text style={styles.loginLink}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </Animatable.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -144,11 +152,15 @@ const styles = StyleSheet.create({
     flex: 1.2,
     justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 40,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
   appName: {
     color: "white",
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
+    textAlign: "center",
     marginTop: 10,
   },
   bottomSection: {
@@ -157,10 +169,15 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 24,
-    paddingTop: 30,
+    paddingTop: 36,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 10,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#292966",
     marginBottom: 24,
@@ -174,11 +191,14 @@ const styles = StyleSheet.create({
   otpBox: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 8,
-    width: 45,
-    height: 50,
+    borderRadius: 10,
+    width: 50,
+    height: 55,
     textAlign: "center",
-    fontSize: 18,
+    fontSize: 20,
+    color: "#292966",
+    backgroundColor: "#f7f7f7",
+    fontWeight: "bold",
   },
   loginLinkContainer: {
     flexDirection: "row",
@@ -187,9 +207,11 @@ const styles = StyleSheet.create({
   },
   loginText: {
     color: "#999",
+    fontSize: 14,
   },
   loginLink: {
-    color: "red",
+    color: "#ff4d4d",
     fontWeight: "bold",
+    fontSize: 14,
   },
 });

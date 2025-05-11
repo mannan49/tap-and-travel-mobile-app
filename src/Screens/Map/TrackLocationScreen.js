@@ -6,12 +6,13 @@ import {
   ActivityIndicator,
   Alert,
   Linking,
-  Button,
+  TouchableOpacity,
 } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import * as Location from "expo-location";
 import apiClient from "../../api/apiClient";
 import polyline from "@mapbox/polyline";
+import * as Animatable from "react-native-animatable";
 
 const GOOGLE_MAPS_API_KEY = "AIzaSyA6V89_30qIOKJEV948T6-a_aPLaBRfiLs";
 
@@ -133,7 +134,7 @@ const TrackLocationScreen = ({ route }) => {
     let url = `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}&travelmode=driving`;
     if (waypoints) url += `&waypoints=${waypoints}`;
 
-    Linking.openURL(url).catch((err) =>
+    Linking.openURL(url).catch(() =>
       Alert.alert("Error", "Failed to open Google Maps.")
     );
   };
@@ -141,8 +142,8 @@ const TrackLocationScreen = ({ route }) => {
   if (loading || !userLocation) {
     return (
       <View style={styles.loaderContainer}>
-        <ActivityIndicator size="large" />
-        <Text>Loading map...</Text>
+        <ActivityIndicator size="large" color="#292966" />
+        <Text style={{ marginTop: 12 }}>Loading map...</Text>
       </View>
     );
   }
@@ -171,23 +172,25 @@ const TrackLocationScreen = ({ route }) => {
         ))}
 
         {routeCoords.length > 0 && (
-          <Polyline
-            coordinates={routeCoords}
-            strokeColor="blue"
-            strokeWidth={4}
-          />
+          <Polyline coordinates={routeCoords} strokeColor="blue" strokeWidth={4} />
         )}
       </MapView>
 
-      <View style={styles.infoBox}>
+      <Animatable.View
+        animation="fadeInUp"
+        duration={500}
+        style={styles.infoBox}
+      >
         {distance && duration && (
-          <>
-            <Text>Distance: {distance}</Text>
-            <Text>Estimated Time: {duration}</Text>
-          </>
+          <View style={styles.infoTextBox}>
+            <Text style={styles.infoText}>📏 {distance}</Text>
+            <Text style={styles.infoText}>⏱️ {duration}</Text>
+          </View>
         )}
-        <Button title="Start Navigation" onPress={handleStartNavigation} />
-      </View>
+        <TouchableOpacity style={styles.navButton} onPress={handleStartNavigation}>
+          <Text style={styles.navButtonText}>🧭 Start Navigation</Text>
+        </TouchableOpacity>
+      </Animatable.View>
     </View>
   );
 };
@@ -205,18 +208,41 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f9f9f9",
   },
   infoBox: {
     position: "absolute",
     bottom: 20,
     left: 20,
     right: 20,
-    padding: 10,
-    backgroundColor: "white",
-    borderRadius: 10,
-    elevation: 5,
+    backgroundColor: "#ffffffee",
+    borderRadius: 16,
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    elevation: 10,
     shadowColor: "#000",
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+  infoTextBox: {
+    marginBottom: 12,
+  },
+  infoText: {
+    fontSize: 16,
+    color: "#2C3E50",
+    fontWeight: "500",
+    marginBottom: 4,
+  },
+  navButton: {
+    backgroundColor: "#292966",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  navButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });

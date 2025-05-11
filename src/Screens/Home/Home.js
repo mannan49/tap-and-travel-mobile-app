@@ -7,12 +7,13 @@ import {
   ScrollView,
 } from "react-native";
 import axios from "axios";
-import { apiBaseUrl } from "../../config/urls";
 import { useNavigation } from "@react-navigation/native";
 import AppSelect from "../../Components/AppSelect";
 import AppDatePicker from "../../Components/AppDatePicker";
 import AppButton from "../../Components/Button";
 import BusCard from "./BusCard";
+import { apiBaseUrl } from "../../config/urls";
+import * as Animatable from "react-native-animatable";
 
 const BookingForm = () => {
   const navigation = useNavigation();
@@ -72,10 +73,8 @@ const BookingForm = () => {
     const selectedDate = date
       ? new Date(date).toISOString().split("T")[0]
       : null;
-    if (!selectedDate) {
-      console.error("Invalid date selected");
-      return;
-    }
+    if (!selectedDate) return;
+
     const results = buses.filter((bus) => {
       const busStartCity = bus.route.startCity.trim().toLowerCase();
       const busEndCity = bus.route.endCity.trim().toLowerCase();
@@ -90,6 +89,7 @@ const BookingForm = () => {
         busDate === selectedDate
       );
     });
+
     setFilteredBuses(results);
     setLoading(false);
   };
@@ -108,62 +108,76 @@ const BookingForm = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Book Your Bus</Text>
+      <Animatable.View animation="fadeInDown" duration={700}>
+        <Text style={styles.title}>🚌 Book Your Bus</Text>
+      </Animatable.View>
 
-      <AppSelect
-        selectedValue={formData.fromCity}
-        items={cities.map((city) => ({ label: city, value: city }))}
-        onValueChange={(itemValue) => handleInputChange("fromCity", itemValue)}
-        value={formData.fromCity}
-        placeholder="Select From City"
-      />
-      <AppSelect
-        selectedValue={formData.toCity}
-        items={cities.map((city) => ({ label: city, value: city }))}
-        onValueChange={(itemValue) => handleInputChange("toCity", itemValue)}
-        value={formData.toCity}
-        placeholder="Select To City"
-      />
-
-      <AppDatePicker
-        value={formData.date}
-        onChange={onDateChange}
-        placeholder="Select date"
-        variant="primary"
-        borderRadius={12}
-      />
-
-      <AppButton text="Search" onPress={handleSubmit} variant="secondary" />
-
-      <View style={styles.results}>
-        <Text style={styles.resultsTitle}>
-          {hasSearched ? "Search Results" : "All Available Buses"}
-        </Text>
-
-        {busesToShow.length > 0
-          ? busesToShow.map((bus, index) => (
-              <BusCard key={bus._id || index} bus={bus} index={index + 1} />
-            ))
-          : !loading && <Text style={styles.noBusText}>No buses found</Text>}
-
-        {/* Loader after showing buses */}
-        {loading && (
-          <ActivityIndicator
-            size="large"
-            color="#0000ff"
-            style={styles.loader}
+      <Animatable.View animation="fadeInUp" duration={700} delay={100}>
+        <View style={styles.card}>
+          <AppSelect
+            selectedValue={formData.fromCity}
+            items={cities.map((city) => ({ label: city, value: city }))}
+            onValueChange={(itemValue) =>
+              handleInputChange("fromCity", itemValue)
+            }
+            value={formData.fromCity}
+            placeholder="📍 From City"
+            style={styles.select}
           />
-        )}
-      </View>
+          <AppSelect
+            selectedValue={formData.toCity}
+            items={cities.map((city) => ({ label: city, value: city }))}
+            onValueChange={(itemValue) =>
+              handleInputChange("toCity", itemValue)
+            }
+            value={formData.toCity}
+            placeholder="📍 To City"
+            style={styles.select}
+          />
+          <AppDatePicker
+            value={formData.date}
+            onChange={onDateChange}
+            placeholder="🗓️ Select Date"
+            variant="primary"
+            borderRadius={12}
+          />
+          <AppButton text="🔍 Search" onPress={handleSubmit} variant="secondary" />
+        </View>
+
+        <View style={styles.results}>
+          <Text style={styles.resultsTitle}>
+            {hasSearched ? "🔍 Search Results" : "🧾 All Available Buses"}
+          </Text>
+
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : busesToShow.length > 0 ? (
+            busesToShow.map((bus, index) => (
+              <Animatable.View
+                key={bus._id || index}
+                animation="fadeInUp"
+                delay={index * 100}
+              >
+                <BusCard bus={bus} index={index + 1} onBook={handleBookTicket} />
+              </Animatable.View>
+            ))
+          ) : (
+            <Text style={styles.noBusText}>No buses found</Text>
+          )}
+        </View>
+      </Animatable.View>
     </ScrollView>
   );
 };
 
+export default BookingForm;
+
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 16,
-    paddingTop: 30,
-    backgroundColor: "#FFFFFF",
+    paddingTop: 24,
+    paddingBottom: 40,
+    backgroundColor: "#F4F6F7",
     flexGrow: 1,
   },
   title: {
@@ -171,10 +185,36 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     color: "#2C3E50",
-    marginTop: 12,
+    marginBottom: 12,
+  },
+  card: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 3,
+  },
+  select: {
+    backgroundColor: "#F0F3F5",
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#D0D3D4",
+    color: "#2C3E50",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   results: {
-    marginTop: 16,
+    marginTop: 24,
   },
   resultsTitle: {
     fontSize: 22,
@@ -183,9 +223,6 @@ const styles = StyleSheet.create({
     color: "#2C3E50",
     textAlign: "center",
   },
-  loader: {
-    marginTop: 20,
-  },
   noBusText: {
     fontSize: 16,
     textAlign: "center",
@@ -193,5 +230,3 @@ const styles = StyleSheet.create({
     color: "#7F8C8D",
   },
 });
-
-export default BookingForm;

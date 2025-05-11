@@ -1,15 +1,26 @@
 import React, { useState } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Animatable from "react-native-animatable";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AppInput from "../../Components/AppInput";
 import Toast from "react-native-toast-message";
 import apiClient from "../../api/apiClient";
 import AppButton from "../../Components/Button";
 import { isValidEmail } from "../../utils/isValidEmail";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 const ForgotEmail = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+
   const handleSendOtp = async () => {
     if (!isValidEmail(email)) {
       Toast.show({ type: "error", text1: "Please enter a valid email" });
@@ -38,46 +49,61 @@ const ForgotEmail = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topSection}>
-        <MaterialIcons
-          name="location-on"
-          size={60}
-          color="white"
-          style={{ marginBottom: 10 }}
-        />
-        <Text style={styles.appName}>Tap And Travel</Text>
-      </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <LinearGradient
+          colors={["#4c669f", "#3b5998", "#192f6a"]}
+          style={styles.topSection}
+        >
+          <Animatable.View animation="fadeInDown" duration={800}>
+            <MaterialIcons
+              name="location-on"
+              size={64}
+              color="white"
+              style={{ marginBottom: 10 }}
+            />
+            <Text style={styles.appName}>Tap And Travel</Text>
+          </Animatable.View>
+        </LinearGradient>
 
-      <View style={styles.bottomSection}>
-        <Text style={styles.welcomeText}>Forgot Password</Text>
-        <Text style={{ color: "#999", marginBottom: 20 }}>
-          Enter your registered email to receive an OTP.
-        </Text>
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={200}
+          style={styles.bottomSection}
+        >
+          <Text style={styles.welcomeText}>Forgot Password</Text>
+          <Text style={styles.subtitle}>
+            Enter your registered email to receive an OTP.
+          </Text>
 
-        <AppInput
-          placeholder="Enter your email"
-          value={email}
-          onChangeText={setEmail}
-        />
+          <AppInput
+            placeholder="Enter your email"
+            value={email}
+            onChangeText={setEmail}
+          />
 
-        <View style={styles.loginRedirectRow}>
-          <Text style={{ color: "#999" }}>Remember your password? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.loginText}>Login</Text>
-          </TouchableOpacity>
-        </View>
+          <View style={styles.loginRedirectRow}>
+            <Text style={styles.grayText}>Remember your password? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text style={styles.loginText}>Login</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View style={{ marginVertical: 12 }} />
-        <AppButton
-          text="Send OTP"
-          onPress={handleSendOtp}
-          disabled={!isValidEmail(email)}
-          variant="primary"
-          isLoading={isLoading}
-        />
-      </View>
-    </View>
+          <View style={{ marginVertical: 16 }} />
+          <AppButton
+            text="Send OTP"
+            onPress={handleSendOtp}
+            disabled={!isValidEmail(email)}
+            variant="primary"
+            isLoading={isLoading}
+          />
+        </Animatable.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -90,11 +116,15 @@ const styles = StyleSheet.create({
     flex: 1.2,
     justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 40,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
   appName: {
     color: "white",
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
+    textAlign: "center",
   },
   bottomSection: {
     flex: 2,
@@ -102,23 +132,37 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 24,
-    paddingTop: 30,
+    paddingTop: 36,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 10,
   },
-  loginRedirectRow: {
-    flexDirection: "row",
-    gap: 0,
-    marginTop: 10,
-  },
-  loginText: {
-    color: "red",
-    fontWeight: "bold",
-  },
-
   welcomeText: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#292966",
     marginBottom: 8,
+  },
+  subtitle: {
+    color: "#999",
+    fontSize: 14,
+    marginBottom: 20,
+  },
+  loginRedirectRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 10,
+  },
+  grayText: {
+    color: "#999",
+    fontSize: 14,
+  },
+  loginText: {
+    color: "#ff4d4d",
+    fontWeight: "bold",
+    fontSize: 14,
   },
 });
 

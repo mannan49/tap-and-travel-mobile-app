@@ -5,19 +5,26 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Platform,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useTheme } from "../theme/theme";
+
+const formatDate = (dateStr) => {
+  if (!dateStr) return "";
+  const date = new Date(dateStr);
+  return date.toISOString().split("T")[0]; // You can customize this
+};
 
 const AppDatePicker = ({
   label,
   value,
   onChange,
   placeholder = "Select date",
-  format = "YYYY-MM-DD",
+  format = "YYYY-MM-DD", // reserved for future formatting
   variant = "primary",
-  borderRadius = 10,
+  borderRadius = 12,
   error = "",
   style,
   ...props
@@ -36,25 +43,34 @@ const AppDatePicker = ({
   };
 
   return (
-    <View style={style}>
+    <View style={[styles.wrapper, style]}>
       {label && <Text style={styles.label}>{label}</Text>}
+
       <TouchableOpacity
         onPress={showDatePicker}
-        style={[styles.container, { borderColor, borderRadius }]}
+        style={[
+          styles.container,
+          {
+            borderColor,
+            borderRadius,
+            backgroundColor: "#f5f6fa",
+          },
+        ]}
+        activeOpacity={0.9}
       >
         <TextInput
           style={styles.input}
-          value={value ? new Date(value).toISOString().split("T")[0] : ""}
+          value={value ? formatDate(value) : ""}
           placeholder={placeholder}
-          placeholderTextColor="gray"
+          placeholderTextColor="#999"
           editable={false}
           {...props}
         />
-        <Ionicons name="calendar" size={24} color="gray" style={styles.icon} />
+        <Ionicons name="calendar" size={22} color="#7f8c8d" style={styles.icon} />
       </TouchableOpacity>
+
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      {/* Date Picker Modal */}
       <DateTimePickerModal
         isVisible={isDatePickerVisible}
         mode="date"
@@ -66,30 +82,37 @@ const AppDatePicker = ({
 };
 
 const styles = StyleSheet.create({
+  wrapper: {
+    marginBottom: 16,
+  },
   label: {
     fontSize: 14,
-    fontWeight: "bold",
-    marginBottom: 5,
-    color: "black",
+    fontWeight: "600",
+    color: "#2c3e50",
+    marginBottom: 6,
   },
   container: {
     flexDirection: "row",
     alignItems: "center",
-    borderWidth: 1.5,
-    paddingHorizontal: 10,
-    paddingVertical: 2,
-    marginVertical: 8,
+    paddingHorizontal: 14,
+    paddingVertical: Platform.OS === "ios" ? 14 : 10,
+    borderWidth: 1.2,
+    shadowColor: "#000",
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   input: {
     flex: 1,
     fontSize: 16,
-    color: "black",
+    color: "#2c3e50",
   },
   icon: {
-    marginLeft: 10,
+    marginLeft: 8,
   },
   errorText: {
-    color: "red",
+    color: "#e74c3c",
     fontSize: 12,
     marginTop: 4,
   },

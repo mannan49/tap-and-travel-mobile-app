@@ -20,170 +20,157 @@ const TicketCard = ({ ticket }) => {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.flightTitle}>{ticket?.adminName}</Text>
-
-        {/* Seat icon with number in a circle */}
+        <Text style={styles.title}>{ticket?.adminName}</Text>
         <View style={styles.seatContainer}>
-          <MaterialCommunityIcons
-            name="seat-passenger"
-            size={20}
-            color="#fff"
-          />
-          <View style={styles.seatNumberCircle}>
-            <Text style={styles.seatNumberText}>
+          <MaterialCommunityIcons name="seat-passenger" size={20} color="#fff" />
+          <View style={styles.seatCircle}>
+            <Text style={styles.seatText}>
               {extractSeatNumber(ticket?.seatNumber)}
             </Text>
           </View>
         </View>
       </View>
 
-      {/* Middle Section */}
-      <View style={styles.middle}>
-        <View style={styles.flightInfo}>
-          {/* Left side: Departure */}
-          <View style={{ alignItems: "center" }}>
-            <Text style={styles.timeText}>
-              {formatTime(ticket?.departureTime)}
-            </Text>
-            <Text style={styles.dateText}>
-              {formatDateToDayMonth(ticket?.date)}
-            </Text>
-            <Text style={styles.cityText}>
-              {getCityShortForm(ticket?.route?.startCity)}
-            </Text>
-            <Text style={styles.airportText}>{ticket?.route?.startCity}</Text>
-          </View>
+      {/* Route Info */}
+      <View style={styles.routeContainer}>
+        {/* Departure */}
+        <View style={styles.pointBlock}>
+          <Text style={styles.time}>{formatTime(ticket?.departureTime)}</Text>
+          <Text style={styles.date}>{formatDateToDayMonth(ticket?.date)}</Text>
+          <Text style={styles.cityCode}>{getCityShortForm(ticket?.route?.startCity)}</Text>
+          <Text style={styles.cityFull}>{ticket?.route?.startCity}</Text>
+        </View>
 
-          {/* Middle Arrow */}
-          <View style={styles.middleLine}>
-            <Text style={styles.flightDuration}>
-              {getTimeDifference(ticket?.departureTime, ticket?.arrivalTime)}
-            </Text>
-            <View style={styles.arrowWrapper}>
-              <View style={styles.circle} />
-              <View style={styles.dashedLine} />
-              <AntDesign name="arrowright" size={20} color="#fff" />
-            </View>
+        {/* Flight Duration & Arrow */}
+        <View style={styles.arrowContainer}>
+          <Text style={styles.duration}>
+            {getTimeDifference(ticket?.departureTime, ticket?.arrivalTime)}
+          </Text>
+          <View style={styles.arrowLine}>
+            <View style={styles.circle} />
+            <View style={styles.dash} />
+            <AntDesign name="arrowright" size={20} color="#fff" />
           </View>
+        </View>
 
-          {/* Right side: Arrival */}
-          <View style={{ alignItems: "center" }}>
-            <Text style={styles.timeText}>
-              {formatTime(ticket?.arrivalTime)}
-            </Text>
-            <Text style={styles.dateText}>
-              {formatDateToDayMonth(ticket?.date)}
-            </Text>
-            <Text style={styles.cityText}>
-              {getCityShortForm(ticket?.route?.endCity)}
-            </Text>
-            <Text style={styles.airportText}>{ticket?.route?.endCity}</Text>
-          </View>
+        {/* Arrival */}
+        <View style={styles.pointBlock}>
+          <Text style={styles.time}>{formatTime(ticket?.arrivalTime)}</Text>
+          <Text style={styles.date}>{formatDateToDayMonth(ticket?.date)}</Text>
+          <Text style={styles.cityCode}>{getCityShortForm(ticket?.route?.endCity)}</Text>
+          <Text style={styles.cityFull}>{ticket?.route?.endCity}</Text>
         </View>
       </View>
 
-      {/* Separator Line */}
-      <View style={styles.separator} />
+      {/* Dashed Divider */}
+      <View style={styles.divider} />
 
-      {/* Ticket Price */}
-      <View style={styles.bookingCodeSection}>
-        <Text style={styles.bookingLabel}>Ticket Price</Text>
-        <Text style={styles.bookingCode}>Rs. {ticket?.fare?.actualPrice}</Text>
+      {/* Fare */}
+      <View style={styles.fareSection}>
+        <Text style={styles.fareLabel}>Ticket Price</Text>
+        <Text style={styles.fare}>PKR {ticket?.fare?.actualPrice}</Text>
       </View>
 
-      {/* Passenger Info */}
+      {/* Passenger */}
       <View style={styles.passengerSection}>
         <Text style={styles.passengerText}>
           {extractSeatNumber(ticket?.seatNumber)}. {ticket?.user}
         </Text>
-
-        {/* Gender Badge */}
         <View style={[styles.badge, { backgroundColor: genderColor }]}>
           <Text style={styles.badgeText}>{genderText}</Text>
         </View>
       </View>
 
-      {/* Side Cutouts */}
+      {/* Decorative Cutouts */}
       <View style={styles.cutoutLeft} />
       <View style={styles.cutoutRight} />
     </View>
   );
 };
 
+export default TicketCard;
+
 const styles = StyleSheet.create({
   container: {
-    margin: 20,
+    marginHorizontal: 16,
+    marginVertical: 12,
     backgroundColor: "#292966",
-    borderRadius: 16,
+    borderRadius: 18,
     padding: 20,
-    elevation: 5,
+    elevation: 6,
     overflow: "visible",
+    position: "relative",
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
   },
-  flightTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-  },
   seatContainer: {
     flexDirection: "row",
     alignItems: "center",
+    gap: 6,
   },
-  seatNumberCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  seatCircle: {
     backgroundColor: "#5c5c99",
-    alignItems: "center",
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     justifyContent: "center",
+    alignItems: "center",
   },
-  seatNumberText: {
+  seatText: {
     color: "#fff",
-    fontSize: 12,
     fontWeight: "bold",
+    fontSize: 12,
   },
-  middle: {
-    marginTop: 20,
-  },
-  flightInfo: {
+  routeContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    marginTop: 20,
+  },
+  pointBlock: {
     alignItems: "center",
+    width: "30%",
   },
-  timeText: {
-    fontSize: 22,
-    fontWeight: "bold",
+  time: {
+    fontSize: 20,
     color: "#fff",
+    fontWeight: "bold",
   },
-  dateText: {
-    fontSize: 14,
+  date: {
     color: "#ddd",
+    fontSize: 14,
+    marginVertical: 2,
   },
-  cityText: {
-    marginTop: 8,
+  cityCode: {
+    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-    color: "#fff",
+    marginTop: 6,
   },
-  airportText: {
+  cityFull: {
+    color: "#bbb",
     fontSize: 12,
-    color: "#ccc",
   },
-  middleLine: {
+  arrowContainer: {
     alignItems: "center",
+    justifyContent: "center",
+    width: "35%",
   },
-  flightDuration: {
+  duration: {
+    color: "#ccc",
     fontSize: 14,
-    color: "#ddd",
+    marginBottom: 12,
   },
-  arrowWrapper: {
+  arrowLine: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 30,
   },
   circle: {
     width: 8,
@@ -191,61 +178,56 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: "#fff",
   },
-  dashedLine: {
-    width: 40, // Make it longer if you want
+  dash: {
+    width: 40,
     height: 1,
     borderWidth: 1,
-    borderColor: "#fff",
     borderStyle: "dashed",
+    borderColor: "#fff",
     marginHorizontal: 6,
   },
-
-  separator: {
+  divider: {
     marginVertical: 20,
-    borderWidth: 0.5,
     borderStyle: "dashed",
+    borderWidth: 0.5,
     borderColor: "#aaa",
   },
-  bookingCodeSection: {
+  fareSection: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
-  bookingLabel: {
+  fareLabel: {
     fontSize: 12,
-    color: "#ccc",
+    color: "#bbb",
   },
-  bookingCode: {
+  fare: {
     fontSize: 22,
-    color: "#ff3f91",
     fontWeight: "bold",
-    marginTop: 8,
+    color: "#ff3f91",
+    marginTop: 4,
   },
   passengerSection: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
+    gap: 10,
     borderTopWidth: 1,
     borderColor: "#444",
-    paddingHorizontal: 20,
-    gap: 12,
+    paddingTop: 10,
   },
   passengerText: {
+    color: "#fff",
     fontSize: 16,
     fontWeight: "600",
-    color: "#fff",
-    marginTop: 8,
   },
   badge: {
-    marginTop: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: 20,
-    alignItems: "center",
-    justifyContent: "center",
   },
   badgeText: {
-    fontSize: 12,
     color: "#fff",
+    fontSize: 12,
     fontWeight: "bold",
   },
   cutoutLeft: {
@@ -269,5 +251,3 @@ const styles = StyleSheet.create({
     marginTop: -10,
   },
 });
-
-export default TicketCard;

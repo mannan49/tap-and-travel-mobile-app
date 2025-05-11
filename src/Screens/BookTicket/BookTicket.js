@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   FlatList,
   Modal,
-  Pressable,
 } from "react-native";
 import { apiBaseUrl } from "../../config/urls";
 import { useNavigation } from "@react-navigation/native";
@@ -14,6 +13,7 @@ import AppButton from "../../Components/Button";
 import { jwtDecode } from "jwt-decode";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+import * as Animatable from "react-native-animatable";
 
 const BookTicket = ({ route }) => {
   const { busId } = route.params;
@@ -58,23 +58,16 @@ const BookTicket = ({ route }) => {
   };
 
   const handleGenderSelection = async (gender) => {
-    console.log("Gender", gender);
-    console.log("Seats", selectedSeats);
-    // Check gender compatibility
     for (let seat of selectedSeats) {
-      console.log("Seat", seat);
       const neighborGender = seat?.neighborGender;
-      console.log(" N Gender", neighborGender);
-      if (neighborGender) {
-        if (neighborGender !== gender) {
-          Toast.show({
-            type: "error",
-            text1: `Seat ${seat.seatNumber.split("-")[1]}: Must select ${
-              neighborGender === "M" ? "Male" : "Female"
-            }`,
-          });
-          return; // Stop further execution
-        }
+      if (neighborGender && neighborGender !== gender) {
+        Toast.show({
+          type: "error",
+          text1: `Seat ${seat.seatNumber.split("-")[1]}: Must select ${
+            neighborGender === "M" ? "Male" : "Female"
+          }`,
+        });
+        return;
       }
     }
 
@@ -98,12 +91,12 @@ const BookTicket = ({ route }) => {
 
     navigation.navigate("PaymentScreen", {
       busId,
-      userId: userId,
+      userId,
       userName,
       email,
       amount: totalAmount,
       adminId: selectedBus?.busDetails?.adminId,
-      selectedSeats: updatedSeats, // small fix here too
+      selectedSeats: updatedSeats,
     });
   };
 
@@ -114,11 +107,11 @@ const BookTicket = ({ route }) => {
     );
     const isSelected = !!selectedSeat;
 
-    let seatColor = "gray";
+    let seatColor = "#BDC3C7"; // default: gray
     if (isBooked) {
-      seatColor = item.gender === "M" ? "#4a90e2" : "#e94b86"; // Blue / Pink
+      seatColor = item.gender === "M" ? "#4a90e2" : "#e94b86";
     } else if (isSelected) {
-      seatColor = "green";
+      seatColor = "#27ae60";
     }
 
     return (
@@ -142,9 +135,9 @@ const BookTicket = ({ route }) => {
   }
 
   return (
-    <View style={styles.container}>
+    <Animatable.View animation="fadeInUp" duration={700} style={styles.container}>
       <Text style={styles.title}>
-        {selectedBus?.route?.startCity} to {selectedBus?.route?.endCity}
+        {selectedBus?.route?.startCity} → {selectedBus?.route?.endCity}
       </Text>
       <Text style={styles.subtitle}>Select Your Seat</Text>
 
@@ -156,7 +149,6 @@ const BookTicket = ({ route }) => {
         contentContainerStyle={styles.seatLayout}
       />
 
-      {/* Show confirm button when seats are selected */}
       {selectedSeats.length > 0 && (
         <View style={styles.selectionInfo}>
           <Text style={styles.selectionText}>
@@ -168,19 +160,17 @@ const BookTicket = ({ route }) => {
             text="Confirm Your Bookings"
             onPress={() => setGenderModalVisible(true)}
           />
-          <View style={{ marginVertical: 8 }} />
         </View>
       )}
 
-      {/* Gender Selection Modal */}
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={genderModalVisible}
         onRequestClose={() => setGenderModalVisible(false)}
       >
         <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
+          <Animatable.View animation="zoomIn" style={styles.modalContainer}>
             <Text style={styles.modalTitle}>Select Gender</Text>
             <AppButton
               style={{ width: 150 }}
@@ -195,88 +185,74 @@ const BookTicket = ({ route }) => {
               variant="secondary"
               onPress={() => handleGenderSelection("F")}
             />
-
             <TouchableOpacity
               onPress={() => setGenderModalVisible(false)}
               style={styles.cancelButton}
             >
               <Text style={styles.cancelButtonText}>Cancel</Text>
             </TouchableOpacity>
-          </View>
+          </Animatable.View>
         </View>
       </Modal>
-    </View>
+    </Animatable.View>
   );
 };
+
+export default BookTicket;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 60, // Increased spacing from the top
-    backgroundColor: "#FFFFFF",
+    paddingTop: 48,
+    backgroundColor: "#F9F9F9",
     alignItems: "center",
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#2C3E50",
+    marginBottom: 8,
     textAlign: "center",
-    marginBottom: 16,
   },
   subtitle: {
-    fontSize: 18,
+    fontSize: 16,
     color: "#7F8C8D",
+    marginBottom: 24,
     textAlign: "center",
-    marginBottom: 32,
   },
   seatLayout: {
     alignItems: "center",
     marginBottom: 40,
   },
   seat: {
-    width: 60,
-    height: 60,
-    margin: 10, // Slightly more space between seats
+    width: 58,
+    height: 58,
+    margin: 10,
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 12,
-    backgroundColor: "#3498DB", // Example color for available seat
+    borderRadius: 10,
+    backgroundColor: "#BDC3C7",
+    elevation: 2,
   },
   seatText: {
-    color: "#FFFFFF",
+    color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
   },
   gender: {
-    color: "#FFFFFF",
+    color: "#fff",
     fontSize: 12,
   },
   selectionInfo: {
-    marginTop: 40,
+    marginTop: 10,
     alignItems: "center",
+    paddingBottom: 20,
   },
   selectionText: {
-    fontSize: 18,
-    color: "#34495E",
-    marginBottom: 20,
-  },
-  confirmButton: {
-    backgroundColor: "#1ABC9C",
-    paddingVertical: 14,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  confirmButtonText: {
-    color: "#FFFFFF",
-    fontWeight: "bold",
     fontSize: 16,
+    color: "#34495E",
+    marginBottom: 14,
   },
   modalBackground: {
     flex: 1,
@@ -287,35 +263,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFFFFF",
     marginHorizontal: 32,
     padding: 24,
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: "center",
+    elevation: 5,
   },
   modalTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: "bold",
     color: "#2C3E50",
-    marginBottom: 24,
-  },
-  genderButton: {
-    width: "80%",
-    paddingVertical: 14,
-    borderRadius: 10,
-    marginVertical: 12,
-    alignItems: "center",
-    backgroundColor: "#2980B9",
-  },
-  genderButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
+    marginBottom: 20,
   },
   cancelButton: {
-    marginTop: 20,
+    marginTop: 16,
   },
   cancelButtonText: {
     color: "#7F8C8D",
     fontSize: 14,
   },
 });
-
-export default BookTicket;

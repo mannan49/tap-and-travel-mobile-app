@@ -11,6 +11,7 @@ import { jwtDecode } from "jwt-decode";
 import apiClient from "../../api/apiClient";
 import AppButton from "../../Components/Button";
 import TicketCard from "./TicketCard";
+import * as Animatable from "react-native-animatable";
 
 const Ticket = () => {
   const [tickets, setTickets] = useState(null);
@@ -30,6 +31,7 @@ const Ticket = () => {
       setTickets(data);
       filterTickets(data, selectedTab);
     } catch (error) {
+      console.error("Error fetching tickets:", error);
     } finally {
       setLoading(false);
     }
@@ -44,18 +46,13 @@ const Ticket = () => {
   }, [selectedTab]);
 
   const filterTickets = (ticketsList, tab) => {
-    const today = new Date();
-    const filtered =
-      tab === "active"
-        ? ticketsList?.active
-        : ticketsList?.past
-
-    setFilteredTickets(filtered);
+    const filtered = tab === "active" ? ticketsList?.active : ticketsList?.past;
+    setFilteredTickets(filtered || []);
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>My Tickets</Text>
+      <Text style={styles.header}>🎫 My Tickets</Text>
 
       {/* Tabs */}
       <View style={styles.tabsContainer}>
@@ -72,99 +69,61 @@ const Ticket = () => {
         />
       </View>
 
-      {/* Loading Indicator */}
+      {/* Content */}
       {loading ? (
         <ActivityIndicator
           size="large"
           color="#2C3E50"
-          style={{ marginTop: 24 }}
+          style={{ marginTop: 40 }}
         />
       ) : (
-        <FlatList
-          data={filteredTickets}
-          keyExtractor={(item, index) => `${item._id}_${index}`}
-          renderItem={({ item }) => <TicketCard ticket={item} />}
-          ListEmptyComponent={() => (
-            <View style={styles.noTicketsContainer}>
-              <Text style={styles.noTicketsText}>
-                No {selectedTab} tickets found.
-              </Text>
-            </View>
-          )}
-        />
+        <Animatable.View animation="fadeInUp" duration={700} style={{ flex: 1 }}>
+          <FlatList
+            data={filteredTickets}
+            keyExtractor={(item, index) => `${item._id}_${index}`}
+            renderItem={({ item }) => <TicketCard ticket={item} />}
+            contentContainerStyle={{ paddingBottom: 40 }}
+            ListEmptyComponent={() => (
+              <View style={styles.noTicketsContainer}>
+                <Text style={styles.noTicketsText}>
+                  No {selectedTab} tickets found.
+                </Text>
+              </View>
+            )}
+          />
+        </Animatable.View>
       )}
     </View>
   );
 };
 
 export default Ticket;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: 8,
-    paddingTop: 60, // Increased top padding for better spacing
-    backgroundColor: "#FFFFFF", // Clean white background
+    paddingHorizontal: 16,
+    paddingTop: 60,
+    backgroundColor: "#FFFFFF",
   },
   header: {
     fontSize: 28,
-    color: "#2C3E50", // Darker text for better readability
-    marginBottom: 20, // More spacing below header
+    color: "#2C3E50",
+    marginBottom: 20,
     fontWeight: "bold",
     textAlign: "center",
   },
   tabsContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginBottom: 12, // Increased spacing under tabs
-  },
-  tabButton: {
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    backgroundColor: "#F4F6F8", // Light neutral grey tab
-    borderRadius: 12,
-    marginHorizontal: 6,
-    shadowColor: "#000000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 4, // Enhanced Android shadow
-  },
-  activeTabButton: {
-    backgroundColor: "#1ABC9C", // Highlight color for active tab (same)
-  },
-  tabButtonText: {
-    color: "#34495E", // Darker neutral text
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  activeTabButtonText: {
-    color: "#FFFFFF", // White text on active tab
-  },
-  ticketCard: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 30,
-    paddingVertical: 10,
-    marginBottom: 24,
-    borderRadius: 16,
-    borderColor: "#e0e0e0",
-    borderWidth: 1,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  ticketText: {
-    color: "#2C3E50", // Dark text for readability
-    fontSize: 16,
-    marginBottom: 8,
+    marginBottom: 16,
   },
   noTicketsContainer: {
-    marginTop: 60, // More space before showing "no tickets" message
+    marginTop: 60,
     alignItems: "center",
   },
   noTicketsText: {
-    color: "#95A5A6", // Softer grey for no ticket messages
+    color: "#95A5A6",
     fontSize: 16,
   },
 });

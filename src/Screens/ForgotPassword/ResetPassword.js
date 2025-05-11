@@ -5,7 +5,12 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Animatable from "react-native-animatable";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AppButton from "../../Components/Button";
 import Toast from "react-native-toast-message";
@@ -17,7 +22,7 @@ const passwordRules = [
   { label: "At least one number", test: (val) => /\d/.test(val) },
   {
     label: "At least one special character",
-    test: (val) => /[!@#$%^&*(),.?":{}|<>]/.test(val),
+    test: (val) => /[!@#$%^&*(),.?\":{}|<>]/.test(val),
   },
 ];
 
@@ -39,9 +44,7 @@ const ResetPassword = ({ navigation, route }) => {
 
   const handleResetPassword = async () => {
     if (!canSubmit) return;
-
     setIsLoading(true);
-
     try {
       const response = await apiClient.post("/user/forgot-password/reset", {
         email,
@@ -53,7 +56,6 @@ const ResetPassword = ({ navigation, route }) => {
         type: "success",
         text1: response?.message || "Password reset successfully!",
       });
-
       navigation.replace("Login");
     } catch (error) {
       Toast.show({
@@ -61,77 +63,92 @@ const ResetPassword = ({ navigation, route }) => {
         text1: error?.response?.data?.message || "Failed to reset password.",
       });
     }
-
     setIsLoading(false);
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.topSection}>
-        <MaterialIcons name="location-on" size={60} color="white" />
-        <Text style={styles.appName}>Tap And Travel</Text>
-      </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <LinearGradient
+          colors={["#4c669f", "#3b5998", "#192f6a"]}
+          style={styles.topSection}
+        >
+          <Animatable.View animation="fadeInDown" duration={800}>
+            <MaterialIcons name="location-on" size={64} color="white" />
+            <Text style={styles.appName}>Tap And Travel</Text>
+          </Animatable.View>
+        </LinearGradient>
 
-      <View style={styles.bottomSection}>
-        <Text style={styles.title}>Reset Your Password</Text>
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={200}
+          style={styles.bottomSection}
+        >
+          <Text style={styles.title}>Reset Your Password</Text>
 
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          placeholder="New Password"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          style={styles.input}
-        />
-        <Text style={styles.label}>Confirm Password</Text>
-        <TextInput
-          placeholder="Confirm Password"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          style={styles.input}
-        />
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            placeholder="New Password"
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+            style={styles.input}
+          />
 
-        <View style={styles.rulesContainer}>
-          {passwordRules.map((rule, index) => {
-            const passed = rule.test(password);
-            return (
+          <Text style={styles.label}>Confirm Password</Text>
+          <TextInput
+            placeholder="Confirm Password"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            style={styles.input}
+          />
+
+          <View style={styles.rulesContainer}>
+            {passwordRules.map((rule, index) => {
+              const passed = rule.test(password);
+              return (
+                <Text
+                  key={index}
+                  style={[styles.ruleText, { color: passed ? "green" : "red" }]}
+                >
+                  • {rule.label}
+                </Text>
+              );
+            })}
+            {confirmPassword.length > 0 && (
               <Text
-                key={index}
-                style={[styles.ruleText, { color: passed ? "green" : "red" }]}
+                style={{
+                  color: passwordsMatch ? "green" : "red",
+                  marginTop: 5,
+                }}
               >
-                • {rule.label}
+                • Passwords {passwordsMatch ? "match" : "do not match"}
               </Text>
-            );
-          })}
-          {confirmPassword.length > 0 && (
-            <Text
-              style={{
-                color: passwordsMatch ? "green" : "red",
-                marginTop: 5,
-              }}
-            >
-              • Passwords {passwordsMatch ? "match" : "do not match"}
-            </Text>
-          )}
-        </View>
+            )}
+          </View>
 
-        <AppButton
-          text="Reset Password"
-          onPress={handleResetPassword}
-          variant="primary"
-          isLoading={isLoading}
-          disabled={!canSubmit}
-        />
+          <AppButton
+            text="Reset Password"
+            onPress={handleResetPassword}
+            variant="primary"
+            isLoading={isLoading}
+            disabled={!canSubmit}
+          />
 
-        <View style={styles.loginLinkContainer}>
-          <Text style={styles.loginText}>Remember your password? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-            <Text style={styles.loginLink}>Login</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+          <View style={styles.loginLinkContainer}>
+            <Text style={styles.loginText}>Remember your password? </Text>
+            <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+              <Text style={styles.loginLink}>Login</Text>
+            </TouchableOpacity>
+          </View>
+        </Animatable.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -142,22 +159,20 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#292966",
   },
-  label: {
-    fontSize: 15,
-    color: "#34495E",
-    marginBottom: 3,
-    marginTop: 3,
-  },
   topSection: {
     flex: 1.2,
     justifyContent: "center",
     alignItems: "center",
+    paddingVertical: 40,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
   },
   appName: {
     color: "white",
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: "bold",
     marginTop: 10,
+    textAlign: "center",
   },
   bottomSection: {
     flex: 2,
@@ -165,21 +180,34 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     paddingHorizontal: 24,
-    paddingTop: 30,
+    paddingTop: 36,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 10,
   },
   title: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#292966",
     marginBottom: 20,
     textAlign: "center",
   },
+  label: {
+    fontSize: 15,
+    color: "#34495E",
+    marginBottom: 6,
+    marginTop: 8,
+  },
   input: {
     borderWidth: 1,
     borderColor: "#ccc",
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 12,
-    marginBottom: 12,
+    marginBottom: 8,
+    backgroundColor: "#f7f7f7",
+    fontSize: 16,
   },
   rulesContainer: {
     marginBottom: 20,
@@ -191,13 +219,15 @@ const styles = StyleSheet.create({
   loginLinkContainer: {
     flexDirection: "row",
     justifyContent: "center",
-    marginTop: 16,
+    marginTop: 20,
   },
   loginText: {
     color: "#999",
+    fontSize: 14,
   },
   loginLink: {
-    color: "red",
+    color: "#ff4d4d",
     fontWeight: "bold",
+    fontSize: 14,
   },
 });
