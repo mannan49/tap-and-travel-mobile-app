@@ -2,22 +2,18 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Button,
   StyleSheet,
   ActivityIndicator,
-  TouchableOpacity,
   ScrollView,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import axios from "axios";
-import { apiBaseUrl } from "../../config/urls";
-import { format12time, formatDate } from "../../utils/helperFunction";
-import Icon from "react-native-vector-icons/FontAwesome";
-import { Picker } from "@react-native-picker/picker";
-import { useNavigation } from "@react-navigation/native"; // Import useNavigation hook
+import { useNavigation } from "@react-navigation/native";
 import AppSelect from "../../Components/AppSelect";
 import AppDatePicker from "../../Components/AppDatePicker";
 import AppButton from "../../Components/Button";
+import BusCard from "./BusCard";
+import { apiBaseUrl } from "../../config/urls";
+import * as Animatable from "react-native-animatable";
 
 const BookingForm = () => {
   const navigation = useNavigation();
@@ -26,6 +22,11 @@ const BookingForm = () => {
   const [buses, setBuses] = useState([]);
   const [loading, setLoading] = useState(false);
   const [cities, setCities] = useState([]);
+  const [formData, setFormData] = useState({
+    fromCity: "",
+    toCity: "",
+    date: "",
+  });
 
   useEffect(() => {
     fetchBuses();
@@ -34,14 +35,12 @@ const BookingForm = () => {
   const fetchBuses = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${apiBaseUrl}/bus`);
+      const response = await axios.get(`${apiBaseUrl}/bus/future`);
       const today = new Date().toISOString().split("T")[0];
-
       const filteredData = response.data.filter((bus) => {
         const busDate = new Date(bus.date).toISOString().split("T")[0];
         return busDate >= today;
       });
-
       setBuses(filteredData);
       extractCities(filteredData);
     } catch (error) {
@@ -59,37 +58,22 @@ const BookingForm = () => {
     setCities([...citySet]);
   };
 
-  const [formData, setFormData] = useState({
-    fromCity: "",
-    toCity: "",
-    date: "",
-  });
-
-  const [showDatePicker, setShowDatePicker] = useState(false);
-
   const handleInputChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
   };
 
   const onDateChange = (selectedDate) => {
     if (!selectedDate) return;
-
     const formattedDate = new Date(selectedDate).toISOString().split("T")[0];
-
     setFormData({ ...formData, date: formattedDate });
   };
-
 
   const filterBuses = () => {
     const { fromCity, toCity, date } = formData;
     const selectedDate = date
       ? new Date(date).toISOString().split("T")[0]
       : null;
-
-    if (!selectedDate) {
-      console.error("Invalid date selected");
-      return;
-    }
+    if (!selectedDate) return;
 
     const results = buses.filter((bus) => {
       const busStartCity = bus.route.startCity.trim().toLowerCase();
@@ -99,7 +83,6 @@ const BookingForm = () => {
       const busDate = bus.date
         ? new Date(bus.date).toISOString().split("T")[0]
         : null;
-
       return (
         busStartCity === selectedFromCity &&
         busEndCity === selectedToCity &&
@@ -121,233 +104,129 @@ const BookingForm = () => {
     navigation.navigate("BookTicket", { busId });
   };
 
+  const busesToShow = hasSearched ? filteredBuses : buses;
+
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.title}>Bus Booking Form</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Animatable.View animation="fadeInDown" duration={700}>
+        <Text style={styles.title}>🚌 Book Your Bus</Text>
+      </Animatable.View>
 
-      <AppSelect
-        selectedValue={formData.fromCity}
-        items={cities.map((city) => ({ label: city, value: city }))}
-        onValueChange={(itemValue) => handleInputChange("fromCity", itemValue)}
-        value={formData.fromCity}
-        placeholder="Select From City"
-      />
-      <AppSelect
-        selectedValue={formData.toCity}
-        items={cities.map((city) => ({ label: city, value: city }))}
-        onValueChange={(itemValue) => handleInputChange("toCity", itemValue)}
-        placeholder="Select To City"
-        value={formData.toCity}
-      />
+      <Animatable.View animation="fadeInUp" duration={700} delay={100}>
+        <View style={styles.card}>
+          <AppSelect
+            selectedValue={formData.fromCity}
+            items={cities.map((city) => ({ label: city, value: city }))}
+            onValueChange={(itemValue) =>
+              handleInputChange("fromCity", itemValue)
+            }
+            value={formData.fromCity}
+            placeholder="📍 From City"
+            style={styles.select}
+          />
+          <AppSelect
+            selectedValue={formData.toCity}
+            items={cities.map((city) => ({ label: city, value: city }))}
+            onValueChange={(itemValue) =>
+              handleInputChange("toCity", itemValue)
+            }
+            value={formData.toCity}
+            placeholder="📍 To City"
+            style={styles.select}
+          />
+          <AppDatePicker
+            value={formData.date}
+            onChange={onDateChange}
+            placeholder="🗓️ Select Date"
+            variant="primary"
+            borderRadius={12}
+          />
+          <AppButton text="🔍 Search" onPress={handleSubmit} variant="secondary" />
+        </View>
 
-      <AppDatePicker
-        value={formData.date}
-        onChange={onDateChange}
-        placeholder="Select date"
-        variant="primary"
-        borderRadius={12}
-      />
+        <View style={styles.results}>
+          <Text style={styles.resultsTitle}>
+            {hasSearched ? "🔍 Search Results" : "🧾 All Available Buses"}
+          </Text>
 
-      {/* Submit Button */}
-      <AppButton text="Search"
-        onPress={handleSubmit}
-        variant="secondary" />
-
-      {/* Loading Indicator */}
-      {loading && (
-        <ActivityIndicator size="large" color="#0000ff" style={styles.loader} />
-      )}
-
-      {/* Show filtered buses if search is done */}
-      <View style={styles.results}>
-        <Text style={styles.resultsTitle}>
-          {hasSearched ? "Search Results" : "All Available Buses"}
-        </Text>
-
-        {(hasSearched ? filteredBuses : buses).length > 0 ? (
-          (hasSearched ? filteredBuses : buses).map((bus, index) => (
-            <View key={index} style={styles.busCard}>
-              <Text style={styles.busCompany}>{bus.adminName}</Text>
-              <View style={styles.routeContainer}>
-                <Text style={styles.cityText}>{bus.route.startCity} </Text>
-                <Icon
-                  name="arrow-right"
-                  size={18}
-                  color="black"
-                  style={styles.arrowIcon}
-                />
-                <Text style={styles.cityText}>{bus.route.endCity}</Text>
-              </View>
-
-              <Text style={styles.price}>
-                Only in Rs. {bus.fare.actualPrice}
-              </Text>
-              <Text style={styles.dateTime}>
-                {formatDate(bus.date)} {bus.time}
-              </Text>
-              <Text style={styles.dateTime}>
-                {format12time(bus.departureTime)}
-                {"  "}
-                <Icon
-                  name="arrow-right"
-                  size={18}
-                  color="black"
-                  style={styles.arrowIcon}
-                />
-                {"  "}
-                {format12time(bus.arrivalTime)}
-              </Text>
-              <Text style={styles.stops}>
-                Stops: {bus.route.stops?.length || 0}
-              </Text>
-
-              {/* Book Button */}
-              <AppButton
-                text="Book my Ticket"
-                variant="secondary"
-                onPress={() => handleBookTicket(bus._id)}
-              />
-            </View>
-          ))
-        ) : (
-          <Text>No buses found</Text>
-        )}
-      </View>
-
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : busesToShow.length > 0 ? (
+            busesToShow.map((bus, index) => (
+              <Animatable.View
+                key={bus._id || index}
+                animation="fadeInUp"
+                delay={index * 100}
+              >
+                <BusCard bus={bus} index={index + 1} onBook={handleBookTicket} />
+              </Animatable.View>
+            ))
+          ) : (
+            <Text style={styles.noBusText}>No buses found</Text>
+          )}
+        </View>
+      </Animatable.View>
     </ScrollView>
   );
 };
 
-const styles = StyleSheet.create({
-  resultsTitle: {
-    fontSize: 22,
-    fontWeight: "600",
-    marginBottom: 10,
-    color: "#2C3E50",
-    textAlign: "center",
-  },
+export default BookingForm;
 
+const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    paddingHorizontal: 20,
-    paddingTop: 40,
-    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 16,
+    paddingTop: 24,
+    paddingBottom: 40,
+    backgroundColor: "#F4F6F7",
+    flexGrow: 1,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
     textAlign: "center",
     color: "#2C3E50",
-    marginBottom: 30,
+    marginBottom: 12,
   },
-  picker: {
-    height: 50,
-    borderColor: "#BDC3C7",
-    borderWidth: 1,
-    borderRadius: 8,
-    marginBottom: 20,
-    paddingHorizontal: 10,
-    backgroundColor: "#F8F9FA",
-    justifyContent: "center",
-  },
-  input: {
-    height: 50,
-    borderColor: "#BDC3C7",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    justifyContent: "center",
-    backgroundColor: "#F8F9FA",
-    marginBottom: 20,
-  },
-  dateText: {
-    fontSize: 16,
-    color: "#34495E",
-  },
-  searchButton: {
-    backgroundColor: "#3498DB",
-    paddingVertical: 14,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 30,
-    elevation: 2,
-  },
-  searchButtonText: {
-    color: "#FFFFFF",
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  loader: {
-    marginTop: 20,
-  },
-  results: {
-    marginTop: 20,
-  },
-  busCard: {
-    backgroundColor: "#FFFFFF",
-    padding: 18,
-    marginBottom: 20,
+  card: {
+    backgroundColor: "white",
+    padding: 20,
     borderRadius: 16,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
     elevation: 3,
-    borderColor: "#ECECEC",
+  },
+  select: {
+    backgroundColor: "#F0F3F5",
+    borderRadius: 10,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    fontSize: 16,
+    marginBottom: 16,
     borderWidth: 1,
-    flexDirection: "column",
-  },
-  busCompany: {
-    fontSize: 20,
-    fontWeight: "bold",
+    borderColor: "#D0D3D4",
     color: "#2C3E50",
-    marginBottom: 12,
-    textTransform: "uppercase",
-    letterSpacing: 1,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
-  routeContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 12,
+  results: {
+    marginTop: 24,
   },
-  cityText: {
+  resultsTitle: {
+    fontSize: 22,
+    fontWeight: "600",
+    marginBottom: 12,
+    color: "#2C3E50",
+    textAlign: "center",
+  },
+  noBusText: {
     fontSize: 16,
-    color: "#34495E",
-    fontWeight: "500",
-  },
-  arrowIcon: {
-    marginHorizontal: 10,
-  },
-  price: {
-    fontSize: 18,
-    color: "#27AE60",
-    fontWeight: "700",
-    marginBottom: 8,
-  },
-  dateTime: {
-    fontSize: 15,
+    textAlign: "center",
+    marginTop: 20,
     color: "#7F8C8D",
-    marginBottom: 6,
-  },
-  stops: {
-    fontSize: 14,
-    color: "#7F8C8D",
-    marginBottom: 12,
-  },
-  bookButton: {
-    backgroundColor: "#3498DB",
-    paddingVertical: 14,
-    borderRadius: 12,
-    alignItems: "center",
-    elevation: 3,
-    marginTop: 10,
-  },
-  bookButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "bold",
-    textTransform: "uppercase",
   },
 });
-
-export default BookingForm;

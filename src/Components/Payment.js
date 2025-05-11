@@ -1,23 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button } from "react-native";
-import {
-  useStripe,
-  initPaymentSheet,
-  presentPaymentSheet,
-} from "@stripe/stripe-react-native";
+import { View } from "react-native";
+import { useStripe } from "@stripe/stripe-react-native";
 import axios from "axios";
 import Toast from "react-native-toast-message";
-import { apiBaseUrl, PAYMENT_INTENT } from "../config/urls";
+import { apiBaseUrl } from "../config/urls";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../api/apiClient";
 import AppButton from "./Button";
 
-
-
-const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
+const Payment = ({ amount, adminId, userId, email, busId, selectedSeats, onSuccess }) => {
   const navigation = useNavigation();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
+  const [paymentId, setPaymentId] = useState(null);
 
   useEffect(() => {
     initializePaymentSheet();
@@ -33,26 +28,22 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
         adminId,
       });
 
-      const { clientSecret, ephemeralKey, customer } = data;
-
+      const { clientSecret, paymentId } = data;
+      setPaymentId(paymentId);
 
       const { error } = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret,
-        customerId: customer,
-        customerEphemeralKeySecret: ephemeralKey,
         merchantDisplayName: "Tap & Travel",
       });
 
-      if (!error) {
-        setLoading(false);
-      }
+      if (!error) setLoading(false);
     } catch (err) {
       Toast.show({
         type: "error",
         text1: "Unable to initialize payment.",
       });
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const openPaymentSheet = async () => {
@@ -65,10 +56,9 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
         text2: error.message,
       });
     } else {
-      Toast.show({
-        type: "success",
-        text1: "Payment Successful!",
-        text2: "Your transaction has been completed.",
+      await apiClient.post(`${apiBaseUrl}/payment/update-status`, {
+        paymentId,
+        status: "succeeded",
       });
       await handleTicketGeneration();
     }
@@ -85,29 +75,34 @@ const Payment = ({ amount, adminId, userId, busId, selectedSeats }) => {
     }
 
     try {
-      for (const seat of selectedSeats) {
-        // **1️⃣ Update Seat Status**
-        await apiClient.patch(`/bus/update-seat-status`, {
-          busId,
-          seatNumber: seat?.seatNumber,
+      const seatPayload = {
+        busId,
+        seatsData: selectedSeats.map((seat) => ({
+          seatNumber: seat.seatNumber,
           booked: true,
-          email: "mannannasir49@gmail.com",
+          email: email,
           gender: seat?.gender,
-        });
+        })),
+      };
+      await apiClient.patch(`/bus/update-seat-status`, seatPayload);
 
-        // **2️⃣ Generate Ticket**
-        await axios.post(`${apiBaseUrl}/ticket/generate`, {
-          userId,
-          busId,
-          seatNumber: seat?.seatNumber,
-          travelDate: new Date().toISOString(),
-        });
-      }
+      const ticketBody = {
+        tickets: selectedSeats.map((seat) => ({
+          userId: userId,
+          busId: busId,
+          seatNumber: seat.seatNumber,
+        })),
+      };
+      await axios.post(`${apiBaseUrl}/ticket/generate`, ticketBody);
 
       Toast.show({
         type: "success",
         text2: "Your ticket has been successfully generated.",
       });
+
+      // 🎉 Trigger confetti from parent
+      if (onSuccess) onSuccess();
+
       navigation.navigate("MainTabs", { screen: "Ticket" });
     } catch (error) {
       console.error("Error generating tickets:", error);

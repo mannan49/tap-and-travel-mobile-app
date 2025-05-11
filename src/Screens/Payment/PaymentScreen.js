@@ -1,78 +1,135 @@
-import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+} from "react-native";
 import Payment from "../../Components/Payment";
+import { MaterialIcons, FontAwesome5 } from "@expo/vector-icons";
+import * as Animatable from "react-native-animatable";
+import ConfettiCannon from "react-native-confetti-cannon";
 
 const PaymentScreen = ({ route }) => {
-  const { amount, busId, userId, adminId, selectedSeats } = route.params;
+  const { amount, busId, userId, userName, email, adminId, selectedSeats } = route.params;
+  const [showConfetti, setShowConfetti] = useState(false);
+
+  const handlePaymentSuccess = () => {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 5000); // Optional reset after 5s
+  };
+
   return (
-    <View style={styles.container}>
-      <View style={styles.cardContainer}>
-        <View style={styles.card}>
-          <Text style={styles.title}>Billing Details</Text>
-          <Text style={styles.detail}><Text style={styles.label}>Name:</Text> John Doe</Text>
-          <Text style={styles.detail}><Text style={styles.label}>Email:</Text> johndoe@example.com</Text>
-          <Text style={styles.detail}><Text style={styles.label}>Total Amount:</Text> $50.00</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Animatable.View animation="fadeInUp" duration={700} style={styles.cardContainer}>
+        <View style={styles.glassCard}>
+          <Text style={styles.cardTitle}>💳 Billing Summary</Text>
+
+          <View style={styles.detailRow}>
+            <MaterialIcons name="person" size={22} color="#00cec9" style={styles.icon} />
+            <Text style={styles.detail}>
+              <Text style={styles.label}>Name: </Text>
+              {userName}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <MaterialIcons name="email" size={22} color="#6c5ce7" style={styles.icon} />
+            <Text style={styles.detail}>
+              <Text style={styles.label}>Email: </Text>
+              {email}
+            </Text>
+          </View>
+
+          <View style={styles.detailRow}>
+            <FontAwesome5 name="money-bill-wave" size={20} color="#00b894" style={styles.icon} />
+            <Text style={styles.detail}>
+              <Text style={styles.label}>Total: </Text>PKR {amount}
+            </Text>
+          </View>
         </View>
-      </View>
-      <Payment style={styles.button}
-        amount={amount}
-        busId={busId}
-        userId={userId}
-        adminId={adminId}
-        selectedSeats={selectedSeats}
-      />
-    </View>
+      </Animatable.View>
+
+      <Animatable.View animation="fadeInUp" duration={700} delay={300}>
+        <Payment
+          style={styles.button}
+          amount={amount}
+          busId={busId}
+          userId={userId}
+          email={email}
+          adminId={adminId}
+          selectedSeats={selectedSeats}
+          onSuccess={handlePaymentSuccess}
+        />
+      </Animatable.View>
+
+      {showConfetti && (
+        <>
+          <ConfettiCannon count={100} origin={{ x: 0, y: 0 }} fadeOut explosionSpeed={300} />
+          <ConfettiCannon count={100} origin={{ x: 400, y: 0 }} fadeOut explosionSpeed={300} />
+        </>
+      )}
+    </ScrollView>
   );
 };
 
+export default PaymentScreen;
+
 const styles = StyleSheet.create({
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 20,
-    elevation: 3,
-  },
   container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
+    flexGrow: 1,
+    padding: 24,
+    backgroundColor: "#f9f9f9",
     alignItems: "center",
-    backgroundColor: "#f8f9fa",
+    justifyContent: "center",
   },
   cardContainer: {
-    width: "90%",
-    alignItems: "center",
-    justifyContent: "center",
-    flex: 1,
-  },
-  card: {
-    backgroundColor: "white",
-    padding: 25,
-    borderRadius: 12,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 5,
     width: "100%",
-    alignItems: "center",
+    marginBottom: 24,
   },
-  title: {
-    fontSize: 20,
+  glassCard: {
+    backgroundColor: "rgba(41, 41, 102, 0.85)",
+    borderRadius: 20,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: "rgba(255, 255, 255, 0.15)",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
+  },
+  cardTitle: {
+    fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 15,
-    color: "#2C3E50",
+    color: "#ffffff",
+    marginBottom: 20,
+    textAlign: "center",
+    letterSpacing: 1,
+  },
+  detailRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+  icon: {
+    marginRight: 10,
   },
   detail: {
     fontSize: 16,
-    color: "#34495E",
-    marginBottom: 8,
+    color: "#f0f0f0",
+    flexShrink: 1,
   },
   label: {
     fontWeight: "bold",
-    color: "#2C3E50",
+    color: "#ffffff",
+  },
+  button: {
+    marginTop: 10,
+    borderRadius: 12,
+    paddingVertical: 14,
+    backgroundColor: "#5d5de6",
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
-
-export default PaymentScreen;

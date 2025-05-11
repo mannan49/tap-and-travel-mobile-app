@@ -1,5 +1,16 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import * as Animatable from "react-native-animatable";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import AppInput from "../../Components/AppInput";
 import AppButton from "../../Components/Button";
 import apiClient from "../../api/apiClient";
@@ -29,17 +40,11 @@ const Signup = ({ navigation }) => {
 
   const isValidData = () => {
     if (!state.name || !state.email || !state.password || !state.phoneNumber) {
-      Toast.show({
-        type: "error",
-        text1: "All fields are required!",
-      });
+      Toast.show({ type: "error", text1: "All fields are required!" });
       return false;
     }
     if (state.password !== state.confirmPassword) {
-      Toast.show({
-        type: "error",
-        text1: "Passwords doesn't match!",
-      });
+      Toast.show({ type: "error", text1: "Passwords don't match!" });
       return false;
     }
     return true;
@@ -59,96 +64,144 @@ const Signup = ({ navigation }) => {
       });
 
       if (response.data) {
-        Toast.show({
-          type: "success",
-          text1: "Otp sent to your email",
-        });
+        Toast.show({ type: "success", text1: "Otp sent to your email" });
         navigation.navigate("OtpVerification", { email: state.email });
       }
     } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "SignUp Failed!",
-      });
+      Toast.show({ type: "error", text1: "SignUp Failed!" });
     } finally {
       updateState({ isLoading: false });
     }
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+    >
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <LinearGradient
+          colors={["#4c669f", "#3b5998", "#192f6a"]}
+          style={styles.topSection}
+        >
+          <Animatable.View animation="fadeInDown" duration={800} delay={200}>
+            <MaterialIcons name="location-on" size={64} color="white" />
+            <Text style={styles.appName}>Tap And Travel</Text>
+          </Animatable.View>
+        </LinearGradient>
 
-      <AppInput
-        label="Full Name"
-        placeholder="Enter your name"
-        onChangeText={(name) => updateState({ name })}
-      />
-      <AppInput
-        label="Email"
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        onChangeText={(email) => updateState({ email })}
-      />
-      <AppInput
-        label="Phone Number"
-        placeholder="Enter your phone number"
-        keyboardType="phone-pad"
-        onChangeText={(phoneNumber) => updateState({ phoneNumber })}
-      />
-      <AppInput
-        label="Password"
-        placeholder="Enter your password"
-        secureTextEntry={state.isSecure}
-        onChangeText={(password) => updateState({ password })}
-        rightIcon={state.isSecure ? "eye-off" : "eye"}
-        onRightIconPress={togglePasswordVisibility}
-      />
-      <AppInput
-        label="Confirm Password"
-        placeholder="Re-enter your password"
-        secureTextEntry={state.isSecureConfirm}
-        onChangeText={(confirmPassword) => updateState({ confirmPassword })}
-        rightIcon={state.isSecureConfirm ? "eye-off" : "eye"}
-        onRightIconPress={toggleConfirmPasswordVisibility}
-      />
+        <Animatable.View
+          animation="fadeInUp"
+          duration={800}
+          delay={300}
+          style={styles.bottomSection}
+        >
+          <Text style={styles.welcomeText}>Create Account</Text>
 
-      <AppButton
-        text="Sign Up"
-        onPress={onSignUp}
-        isLoading={state.isLoading}
-      />
+          <AppInput
+            placeholder="Full Name"
+            value={state.name}
+            onChangeText={(name) => updateState({ name })}
+          />
+          <AppInput
+            placeholder="Email"
+            value={state.email}
+            keyboardType="email-address"
+            onChangeText={(email) => updateState({ email })}
+          />
+          <AppInput
+            placeholder="Phone Number"
+            value={state.phoneNumber}
+            keyboardType="phone-pad"
+            onChangeText={(phoneNumber) => updateState({ phoneNumber })}
+          />
+          <AppInput
+            placeholder="Password"
+            secureTextEntry={state.isSecure}
+            value={state.password}
+            onChangeText={(password) => updateState({ password })}
+            rightIcon={state.isSecure ? "eye-off" : "eye"}
+            onRightIconPress={togglePasswordVisibility}
+          />
+          <AppInput
+            placeholder="Confirm Password"
+            secureTextEntry={state.isSecureConfirm}
+            value={state.confirmPassword}
+            onChangeText={(confirmPassword) =>
+              updateState({ confirmPassword })
+            }
+            rightIcon={state.isSecureConfirm ? "eye-off" : "eye"}
+            onRightIconPress={toggleConfirmPasswordVisibility}
+          />
 
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-        <Text style={styles.loginText}>
-          Already have an account? <Text style={styles.boldText}>Login</Text>
-        </Text>
-      </TouchableOpacity>
-    </View>
+          <View style={{ marginVertical: 16 }} />
+          <AppButton
+            text="Sign Up"
+            onPress={onSignUp}
+            isLoading={state.isLoading}
+            variant="primary"
+          />
+
+          <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+            <Text style={styles.loginText}>
+              Already have an account?{" "}
+              <Text style={styles.registerNow}>Login</Text>
+            </Text>
+          </TouchableOpacity>
+        </Animatable.View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 24,
-    backgroundColor: "white",
-    justifyContent: "center",
+    backgroundColor: "#292966",
   },
-  title: {
-    fontSize: 24,
+  topSection: {
+    flex: 1.2,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 40,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+  },
+  appName: {
+    color: "white",
+    fontSize: 28,
     fontWeight: "bold",
     textAlign: "center",
+    marginTop: 8,
+  },
+  bottomSection: {
+    flex: 2,
+    backgroundColor: "white",
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 24,
+    paddingTop: 36,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 10,
+  },
+  welcomeText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#292966",
     marginBottom: 20,
   },
   loginText: {
     textAlign: "center",
-    marginTop: 15,
+    marginTop: 20,
     fontSize: 16,
+    color: "#666",
   },
-  boldText: {
+  registerNow: {
+    color: "#ff4d4d",
     fontWeight: "bold",
-    color: "blue",
   },
 });
 
